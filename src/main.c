@@ -32,17 +32,36 @@ int main(void) {
     do {
         GetInputInt("Enter command 0 to SHUTDOWN SYSTEM and 1 to access ADMIN MENU: ", &choice);
 
-        // TODO: Replace with hashed password
-        char adminPw[6] = "admin"; 
+        char adminPw[6] = "admin"; // TODO: Replace with hashed password
         char inputPw[21];
+
+        int saveCardsResult;
 
         switch (choice) {
             case SHUTDOWN_SYSTEM:
                 // End thread scanning for RFID cards - rfidReading();
-                saveAccessCards(pAccessCards, cardCount);
-                free(pAccessCards);
-                printf("Shutting down DOOR ACCESS CONTROL SYSTEM...\n");
-                break;
+                saveCardsResult = saveAccessCards(pAccessCards, cardCount);
+
+                // Check if save to file was successful, else prompt user to try again or shutdown without saving.
+                if (saveCardsResult == 0) {
+                    printf("Cards saved successfully.\n");
+                    free(pAccessCards);
+                    printf("Shutting down DOOR ACCESS CONTROL SYSTEM...\n");
+                    break;
+                } else {
+                    int shutdownChoice;
+                    GetInputInt("Error saving cards. Enter 0 to cancel or 1 to shutdown system without saving: ", &shutdownChoice);
+                    
+                    if (choice == 0) {
+                        break;
+                    } else {
+                        free(pAccessCards);
+                        printf("Shutting down DOOR ACCESS CONTROL SYSTEM...\n");
+                        break;
+                    }
+
+                }
+
             case ADMIN_MENU:
                 GetInput("Enter admin password: ", inputPw, 20);
                 bool validPassword = strcmp(adminPw, inputPw) == 0;

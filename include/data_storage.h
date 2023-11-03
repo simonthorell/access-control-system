@@ -3,7 +3,7 @@
 
 #include "card_management.h" // Access to card struct and access enum
 
-void saveAccessCards(accessCard *pAccessCards, size_t cardCount);
+int saveAccessCards(accessCard *pAccessCards, size_t cardCount);
 accessCard* retrieveAccessCards(size_t *cardCount);
 
 #endif

@@ -4,11 +4,34 @@
 #include <string.h>
 #include <time.h>
 
-void saveAccessCards(accessCard *pAccessCards, size_t cardCount) {
-    // Code to save access cards from heap to file. 
+int saveAccessCards(accessCard *pAccessCards, size_t cardCount) {
     printf("Saving %zu access cards from memory location: %p to file 'access_cards.csv'...\n", cardCount, (void *)pAccessCards);
+
+    FILE *file = fopen("access_cards.csv", "w");
+    if (!file) return -1; // Could not open file for writing.
+
+    // Write header line to CSV file
+    fprintf(file, "CardNumber,Status,DateCreated\n");
+
+    // Iterate over each accessCard and write to file
+    for (size_t i = 0; i < cardCount; i++) {
+        const char* statusStr = pAccessCards[i].cardAccess == ACCESS ? "ACCESS" : "NO_ACCESS";
+        
+        // Write the CSV line
+        if (fprintf(file, "%d,%s,%ld\n", 
+                    pAccessCards[i].cardNumber, 
+                    statusStr, 
+                    pAccessCards[i].dateCreated) < 0) {
+            fclose(file);
+            return -2; // Writing to file failed
+        }
+    }
+
+    fclose(file); // Close the file after writing
+    return 0; // Success
 }
 
+// NOTE! Caller is responsible for freeing the memory allocated by this function!
 accessCard* retrieveAccessCards(size_t *cardCount) {
     FILE *file = fopen("access_cards.csv", "r");
     if (!file) return NULL;
@@ -50,22 +73,3 @@ accessCard* retrieveAccessCards(size_t *cardCount) {
     fclose(file);
     return accessCards; // Caller is responsible for freeing the memory!!!
 }
-
-// accessCard* retrieveAccessCards(size_t *cardCount) {
-//     printf("Retrieving saved access cards from file...\n");
-
-//     // ONLY FOR TESTING (Static array - persists after the function returns)
-//     // Replace with readFromFile() function
-//     static accessCard accessCards[] = {
-//         {1000, ACCESS, 1698166400},
-//         {1001, NO_ACCESS, 1698166400},
-//         {1002, ACCESS, 1698166400}
-//     };
-
-//     // Set the card count
-//     if (cardCount) {
-//         *cardCount = sizeof(accessCards) / sizeof(accessCards[0]);
-//     }
-
-//     return accessCards;
-// }
