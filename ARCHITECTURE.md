@@ -1,7 +1,7 @@
 # System Architecture Overview
 This document outlines the core architecture and functionalities of the RFID-based access control system, structured into distinct components.  
 The system will use a microcontroller (Arduino or ESP32) to read and write to RFID cards via serial port.   
-The microcontroller will also contain to LED's (green and red) to emulate open/closed door depending if access is granted.  
+The microcontroller will also contain to LED's (green and red) to emulate unlocked/locked door depending if access is granted.  
 
 ## Admin Menu
 The Admin Menu is the central hub for system administrators to manage access control and system settings. Implemented in `admin_menu.c`.   

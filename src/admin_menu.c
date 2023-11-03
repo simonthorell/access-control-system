@@ -22,7 +22,8 @@ int adminMenu(void) {
                 listAllCards();
                 break;
             case ADD_REMOVE_ACCESS:
-                // addRemoveAccess();
+                printf("CREATE SUBMENU HERE!\n");
+                addRemoveAccess();
                 break;
             case EXIT:
                 // free memory
