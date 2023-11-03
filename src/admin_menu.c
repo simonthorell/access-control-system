@@ -1,4 +1,3 @@
-#include "admin_menu.h"
 #include <stdio.h>
 #include "safeinput.h"
 
@@ -6,7 +5,9 @@
 #include "card_management.h"
 #include "card_reader.h"
 
-int adminMenu(void) {
+#include "admin_menu.h"
+
+int adminMenu(accessCard *pAccessCards, size_t cardCount) {
     printMenuOptions();
     
     int menuChoice;
@@ -19,7 +20,7 @@ int adminMenu(void) {
                 remoteOpenDoor();
                 break;
             case LIST_CARDS:
-                listAllCards();
+                listAllCards(pAccessCards, cardCount);
                 break;
             case ADD_REMOVE_ACCESS:
                 printf("CREATE SUBMENU HERE!\n");

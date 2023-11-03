@@ -14,7 +14,7 @@ enum cardAccess {
     ACCESS
 };
 
-void listAllCards(void);
+void listAllCards(accessCard *pAccessCards, size_t cardCount);
 void addRemoveAccess(void);
 
 #endif

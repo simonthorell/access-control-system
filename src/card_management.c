@@ -2,14 +2,11 @@
 #include <stdio.h>
 #include "safeinput.h"
 #include "data_storage.h"
+#include "card_reader.h"
 
-void listAllCards(void) {
+void listAllCards(accessCard *pAccessCards, size_t cardCount) {
     printf("Listing all registered access cards...\n");
-    
-    size_t cardCount;
-    accessCard *pAccessCards = retrieveAccessCards(&cardCount);
 
-    // Iterate over the cards using cardCount to avoid hardcoding the size
     for (size_t i = 0; i < cardCount; i++) {
         char buffer[20]; // Buffer to hold the formatted date.
 
