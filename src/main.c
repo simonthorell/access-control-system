@@ -5,7 +5,7 @@
 #include "safeinput.h"
 
 enum choice{
-    EXIT_SYSTEM = 0,
+    SHUTDOWN_SYSTEM = 0,
     ADMIN_MENU = 1
 };
 
@@ -17,14 +17,14 @@ int main(void) {
     int choice = 1;
 
     do {
-        GetInputInt("Press 0 to EXIT SYSTEM and 1 to enter ADMIN MENU.\n", &choice);
+        GetInputInt("Press 0 to SHUTDOWN SYSTEM and 1 to enter ADMIN MENU.\n", &choice);
 
         char adminPw[6] = "admin"; // REPLACE WITH ENCRYPTED PASSWORD
         char inputPw[21];
 
         switch (choice) {
-            case EXIT_SYSTEM:
-                printf("Exiting...\n");
+            case SHUTDOWN_SYSTEM:
+                printf("Shutting down door access control system...\n");
                 break;
             case ADMIN_MENU:
                 GetInput("Enter admin password: ", inputPw, 20);
@@ -40,7 +40,7 @@ int main(void) {
                 break;
         }
 
-    } while (choice != EXIT_SYSTEM);
+    } while (choice != SHUTDOWN_SYSTEM);
     
     return 0;
 }

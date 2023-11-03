@@ -1,19 +1,25 @@
 #include "door_control.h"
 #include <stdio.h>
-#include <stdbool.h>
 
+// Open door from admin menu
 void remoteOpenDoor(void) {
-    // Sends signal to Arduino to unlock the door
-    lockUnlockMechanism(DOOR_UNLOCKED);
     printf("Door unlocked remotely.\n");
+    lockUnlockMechanism(DOOR_UNLOCKED);
 }
 
-void lockUnlockMechanism(int lockState) {
-    if (lockState) {
-        // Code to show GREEN LED on Arduino
-        // printf("Door locked.\n");
-    } else {
-        // Code to show RED LED on Arduino
-        // rintf("Door unlocked.\n");
+// Sends signal to MCU to unlock the door
+void lockUnlockMechanism(int doorLock) {
+    switch (doorLock) {
+        case DOOR_UNLOCKED:
+            // Code to send signal to MCU to unlock door => GREEN LED
+            printf("CURRENTLY LAMP IS: Green\n");
+            // KEEP DOOR UNLOCKED FOR 3 SECONDS
+            portableSleep(3);
+            lockUnlockMechanism(DOOR_LOCKED);
+            break;
+        case DOOR_LOCKED:
+            // Code to send signal to MCU to lock door => RED LED
+            printf("CURRENTLY LAMP IS: Red\n");
+            break;
     }
 }
