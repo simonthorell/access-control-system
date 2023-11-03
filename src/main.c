@@ -1,10 +1,11 @@
 #include <stdio.h>
 #include <stdbool.h>
-#include <string.h>
+#include <string.h> // strcmp
+#include <stdlib.h> // Free memory in heap created by malloc
 #include "safeinput.h"
 
 #include "admin_menu.h"
-#include "card_reader.h"
+#include "card_reader.h" // MCU RFID card reader
 #include "card_management.h" // Struct for access cards
 #include "data_storage.h" // Retrieve access cards from file
 
@@ -29,7 +30,7 @@ int main(void) {
     int choice = 1;
 
     do {
-        GetInputInt("Press 0 to SHUTDOWN SYSTEM and 1 to enter ADMIN MENU.\n", &choice);
+        GetInputInt("Enter command 0 to SHUTDOWN SYSTEM and 1 to access ADMIN MENU: ", &choice);
 
         // TODO: Replace with hashed password
         char adminPw[6] = "admin"; 
@@ -39,7 +40,8 @@ int main(void) {
             case SHUTDOWN_SYSTEM:
                 // End thread scanning for RFID cards - rfidReading();
                 saveAccessCards(pAccessCards, cardCount);
-                printf("Shutting down door access control system...\n");
+                free(pAccessCards);
+                printf("Shutting down DOOR ACCESS CONTROL SYSTEM...\n");
                 break;
             case ADMIN_MENU:
                 GetInput("Enter admin password: ", inputPw, 20);
@@ -57,5 +59,6 @@ int main(void) {
 
     } while (choice != SHUTDOWN_SYSTEM);
     
+    // DO NOT FORGET TO free(pAccessCards); !!!!!!!!!!!!!!!
     return 0;
 }

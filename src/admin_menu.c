@@ -27,7 +27,6 @@ int adminMenu(accessCard *pAccessCards, size_t cardCount) {
                 addRemoveAccess();
                 break;
             case EXIT:
-                // free memory
                 printf("Exiting admin menu...\n");
                 break;
             case FAKE_TEST_SCAN_CARD:
