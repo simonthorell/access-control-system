@@ -7,7 +7,7 @@ void fakeTestScanCard(void) {
 }
 
 void rfidReading(void) {
-    // Code to handle the reading of RFID card data
+    // Code to handle the reading of RFID card data from MCU
     printf("Reading RFID card...\n");
 }
 

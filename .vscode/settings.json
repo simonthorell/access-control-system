@@ -7,6 +7,7 @@
         }
     ],
     "files.associations": {
-        "door_control.h": "c"
+        "door_control.h": "c",
+        "admin_menu.h": "c"
     }
 }
