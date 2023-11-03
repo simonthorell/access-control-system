@@ -1,7 +1,10 @@
 #include "admin_menu.h"
 #include <stdio.h>
 #include "safeinput.h"
+
 #include "door_control.h"
+#include "card_management.h"
+#include "card_reader.h"
 
 int adminMenu(void) {
     printMenuOptions();
@@ -16,7 +19,7 @@ int adminMenu(void) {
                 remoteOpenDoor();
                 break;
             case LIST_CARDS:
-                // listCards();
+                listAllCards();
                 break;
             case ADD_REMOVE_ACCESS:
                 // addRemoveAccess();
@@ -26,7 +29,7 @@ int adminMenu(void) {
                 printf("Exiting admin menu...\n");
                 break;
             case FAKE_TEST_SCAN_CARD:
-                // fakeTestScanCard();
+                fakeTestScanCard();
                 break;
             default:
                 printf("Invalid choice! Try Again! \n");
