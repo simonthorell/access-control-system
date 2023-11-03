@@ -5,5 +5,8 @@
             "binaryPath": "/Users/simonthorell/Library/Mobile Documents/com~apple~CloudDocs/Files/Education/IoT23/03_C_C++_Programmering/ExaminationsUppgifter/Examinationsuppgift_1_C/main.exe",
             "binaryArgs": []
         }
-    ]
+    ],
+    "files.associations": {
+        "door_control.h": "c"
+    }
 }

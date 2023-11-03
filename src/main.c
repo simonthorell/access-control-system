@@ -1,35 +1,46 @@
 #include <stdio.h>
 #include <stdbool.h>
+#include <string.h>
 #include "admin_menu.h"
+#include "safeinput.h"
+
+enum choice{
+    EXIT_SYSTEM = 0,
+    ADMIN_MENU = 1
+};
 
 int main(void) {
-    bool runProgram = true;
+    // TODO: Load cards from file
+    // TODO: Run thread to have MCU access card database
+    
+    printf("DOOR ACCESS CONTROL SYSTEM RUNNING...\n");
+    int choice = 1;
 
     do {
-        int menuChoice = adminMenu();
+        GetInputInt("Press 0 to EXIT SYSTEM and 1 to enter ADMIN MENU.\n", &choice);
 
-        switch (menuChoice) {
-            case REMOTE_OPEN_DOOR:
-                // remoteOpenDoor();
+        char adminPw[6] = "admin"; // REPLACE WITH ENCRYPTED PASSWORD
+        char inputPw[21];
+
+        switch (choice) {
+            case EXIT_SYSTEM:
+                printf("Exiting...\n");
                 break;
-            case LIST_CARDS:
-                // listCards();
-                break;
-            case ADD_REMOVE_ACCESS:
-                // addRemoveAccess();
-                break;
-            case EXIT:
-                // free memory
-                runProgram = false;
-                break;
-            case FAKE_TEST_SCAN_CARD:
-                // fakeTestScanCard();
-                break;
+            case ADMIN_MENU:
+                GetInput("Enter admin password: ", inputPw, 20);
+                bool validPassword = strcmp(adminPw, inputPw) == 0;
+                if (validPassword) {
+                    adminMenu();
+                } else {
+                    printf("Invalid password!\n");
+                }
+                continue;
             default:
-                printf("Invalid choice! Try Again! \n");
+                printf("Invalid choice! Try again!\n");
                 break;
         }
-    } while (runProgram);
+
+    } while (choice != EXIT_SYSTEM);
     
     return 0;
 }

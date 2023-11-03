@@ -1,10 +1,40 @@
 #include "admin_menu.h"
 #include <stdio.h>
 #include "safeinput.h"
+#include "door_control.h"
 
 int adminMenu(void) {
     printMenuOptions();
-    return getMenuChoice();  
+    
+    int menuChoice;
+
+    do {
+        menuChoice = getMenuChoice();
+
+        switch (menuChoice) {
+            case REMOTE_OPEN_DOOR:
+                remoteOpenDoor();
+                break;
+            case LIST_CARDS:
+                // listCards();
+                break;
+            case ADD_REMOVE_ACCESS:
+                // addRemoveAccess();
+                break;
+            case EXIT:
+                // free memory
+                printf("Exiting admin menu...\n");
+                break;
+            case FAKE_TEST_SCAN_CARD:
+                // fakeTestScanCard();
+                break;
+            default:
+                printf("Invalid choice! Try Again! \n");
+                break;
+        }
+    } while (menuChoice != EXIT);
+
+    return 0;
 }
 
 void printMenuOptions(void){
