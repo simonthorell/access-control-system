@@ -1,1 +1,8 @@
+# Exclude main.exe file
 main.exe
+
+# Exclude obj folder and all its contents
+obj/
+
+# Exclude .vscode folder and all its contents
+.vscode/
