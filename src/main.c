@@ -5,6 +5,7 @@
 
 #include "admin_menu.h"
 #include "card_reader.h"
+#include "card_management.h"
 
 enum choice{
     SHUTDOWN_SYSTEM = 0,
@@ -13,6 +14,8 @@ enum choice{
 
 int main(void) {
     // TODO: Load cards from file
+    
+
     /* TODO: Run thread to have MCU access card database and validate RFID cards
     while (true) {
         rfidReading();

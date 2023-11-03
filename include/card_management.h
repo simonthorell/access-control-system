@@ -1,9 +1,17 @@
 #ifndef CARD_MANAGEMENT_H
 #define CARD_MANAGEMENT_H
 
+#include <time.h>
+
+typedef struct {
+    int cardNumber;
+    int cardAccess;
+    time_t dateCreated;
+} accessCard;
+
 enum cardAccess {
-    NO_ACCESS = 0,
-    ACCESS = 1
+    NO_ACCESS, // First element == 0
+    ACCESS
 };
 
 void listAllCards(void);

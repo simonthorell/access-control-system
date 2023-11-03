@@ -10,6 +10,7 @@
         "door_control.h": "c",
         "admin_menu.h": "c",
         "safeinput.h": "c",
-        "stdio.h": "c"
+        "stdio.h": "c",
+        "card_management.h": "c"
     }
 }
