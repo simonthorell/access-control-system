@@ -4,10 +4,10 @@
 #include "data_storage.h"
 #include "card_reader.h"
 
-void listAllCards(accessCard *pAccessCards, size_t cardCount) {
+void listAllCards(accessCard *pAccessCards, size_t *pCardCount) {
     printf("Listing all registered access cards...\n");
 
-    for (size_t i = 0; i < cardCount; i++) {
+    for (size_t i = 0; i < *pCardCount; i++) {
         char buffer[20]; // Buffer to hold the formatted date.
 
         // Format the dateCreated of the card into "YYYY-MM-DD HH:MM".
@@ -21,31 +21,36 @@ void listAllCards(accessCard *pAccessCards, size_t cardCount) {
 }
 
 // Add or remove access for individual RFID cards
-void addRemoveAccess(void) {
+void addRemoveAccess(accessCard *pAccessCards, size_t *pCardCount) {
     int cardNumber;
-    int cardAccess;
+    int cardAccess = NO_ACCESS;
+    bool cardFound = false;
+
     GetInputInt("Enter cardnumber: ", &cardNumber);
 
-    // Check if card number is in array of registered cards, assign access value to cardAccess else cardAccess = NO_ACCESS.
-    // Check if card number is in array of registered cards, else last card ID + 1
-
-    // if (cardNumber-->access == ACCESS) {
-    //     printf("Card currently %d has access\n", cardnumber);
-    // } else if (cardNumber-->access == NO_ACCESS) {
-    //     printf("Card currently%d has no access\n", cardnumber);
-    // } else {
-    //     time_t dateNow = time(NULL); // Generate current date/time
-    //     printf("New card with ID %d has been registered\n", cardnumber);
-    // }
-
-
-    GetInputInt("Enter new card access (0 = no access, 1 = access): ", &cardAccess);
-    
-    if (cardAccess == NO_ACCESS) {
-        printf("Removing access for card %d\n", cardNumber);
-    } else if (cardAccess == ACCESS) {
-        printf("Adding access for card %d\n", cardNumber);
-    } else {
-        printf("Invalid access value: %d\n", cardAccess);
+    // Check if card exists in access card array
+    for (size_t i = 0; i < *pCardCount; i++) {
+        if (pAccessCards[i].cardNumber == cardNumber) {
+            printf("Card currently has access: %d (0 = NO ACCESS, 1 = ACCESS)\n", pAccessCards[i].cardAccess);
+            GetInputInt("Enter new card access (0 = NO ACCESS, 1 = ACCESS): ", &cardAccess);
+            printf("Updated card with access: %d\n", cardAccess);
+            pAccessCards[i].cardAccess = cardAccess;
+            pAccessCards[i].dateCreated = time(NULL); // Generate current date/time
+            cardFound = true;
+            break;
+        }
     }
+
+    // If card was not found, register it
+    if (!cardFound) {
+        // TO DO: REALLOC!!!
+        printf("New card with ID %d has been registered\n", cardNumber);
+        pAccessCards[(*pCardCount)].cardNumber = cardNumber;    
+        GetInputInt("Enter new card access (0 = NO ACCESS, 1 = ACCESS): ", &cardAccess);
+        printf("Updated card with access: %d\n", cardAccess);
+        pAccessCards[(*pCardCount)].cardAccess = cardAccess;
+        pAccessCards[(*pCardCount)].dateCreated = time(NULL); // Generate current date/time
+        (*pCardCount)++;
+    }
+    
 }

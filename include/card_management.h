@@ -3,6 +3,7 @@
 
 #include <time.h>
 
+// Should these be in their own header file?
 typedef struct {
     int cardNumber;
     int cardAccess;
@@ -14,7 +15,7 @@ enum cardAccess {
     ACCESS
 };
 
-void listAllCards(accessCard *pAccessCards, size_t cardCount);
-void addRemoveAccess(void);
+void listAllCards(accessCard *pAccessCards, size_t *pCardCount);
+void addRemoveAccess(accessCard *pAccessCards, size_t *pCardCount);
 
 #endif

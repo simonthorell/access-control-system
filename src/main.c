@@ -18,6 +18,7 @@ int main(void) {
     // TODO: Load access cards from file into memory
     // TODO: Create struct for access cards
     size_t cardCount;
+    size_t *pCardCount = &cardCount;
     accessCard *pAccessCards = retrieveAccessCards(&cardCount);
 
     // TODO: Run 2nd thread to have MCU access card database and validate RFID cards while admin use system.
@@ -66,7 +67,7 @@ int main(void) {
                 GetInput("Enter admin password: ", inputPw, 20);
                 bool validPassword = strcmp(adminPw, inputPw) == 0;
                 if (validPassword) {
-                    adminMenu(pAccessCards, cardCount);
+                    adminMenu(pAccessCards, pCardCount);
                 } else {
                     printf("Invalid password!\n");
                 }

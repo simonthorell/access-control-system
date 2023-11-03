@@ -11,7 +11,7 @@ enum menuChoice {
     FAKE_TEST_SCAN_CARD = 9
 };
 
-int adminMenu(accessCard *pAccessCards, size_t cardCount);
+int adminMenu(accessCard *pAccessCards, size_t *pCardCount);
 void printMenuOptions(void);
 int getMenuChoice(void);
 
