@@ -31,7 +31,7 @@ int main(void) {
     int choice = 1;
 
     do {
-        GetInputInt("Enter command 0 to SHUTDOWN SYSTEM and 1 to access ADMIN MENU: ", &choice);
+        GetInputInt("Enter command (0 = SHUTDOWN SYSTEM, 1 = ADMIN MENU): ", &choice);
 
         char adminPw[6] = "admin"; // TODO: Replace with hashed password
         char inputPw[21];

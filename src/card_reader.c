@@ -1,9 +1,26 @@
 //#include "card_reader.h"
 #include <stdio.h>
+#include "safeinput.h"
+#include "card_management.h"
+#include "card_reader.h"
+#include "door_control.h"
 
-void fakeTestScanCard(void) {
+void fakeTestScanCard(accessCard *pAccessCards, size_t *pCardCount) {
     // Simulate the scanning of an RFID card for testing purposes
-    printf("Fake RFID card scanned.\n");
+    int cardNumber;
+    GetInputInt("Enter fake card ID: ", &cardNumber);
+    // printf("Fake RFID card scanned...\n");
+
+    int cardAuthenticated = cardAuthentication(pAccessCards, pCardCount, cardNumber);
+
+    if (cardAuthenticated) {
+        printf("Card authenticated!\n");
+        lockUnlockMechanism(DOOR_UNLOCKED);
+    }
+    else {
+        printf("Card not authenticated!\n");
+    }
+
 }
 
 void rfidReading(void) {
@@ -11,7 +28,27 @@ void rfidReading(void) {
     printf("Reading RFID card...\n");
 }
 
-void cardAuthentication(void) {
+int cardAuthentication(accessCard *pAccessCards, size_t *pCardCount, int cardNumber) {
     // Code to validate RFID card against the authorized list
-    printf("Authenticating RFID card...\n");
+    // printf("Authenticating RFID card...\n");
+
+    // Loop through all registered cards
+    for (size_t i = 0; i < *pCardCount; i++) {
+        // If card is found in the list
+        if (pAccessCards[i].cardNumber == cardNumber) {
+            // printf("Card found in system!\n");
+            // If card has access
+            if (pAccessCards[i].cardAccess == ACCESS) {
+                // printf("Card has access!\n");
+                return ACCESS;
+            }
+            else {
+                // printf("Card does not have access!\n");
+                return NO_ACCESS;
+            }
+            break;
+        }
+    }
+
+    return NO_ACCESS; // FALL BACK = NO ACCESS
 }

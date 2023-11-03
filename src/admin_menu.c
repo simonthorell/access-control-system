@@ -32,7 +32,7 @@ int adminMenu(accessCard *pAccessCards, size_t *pCardCount) {
                 printf("Exiting admin menu...\n");
                 break;
             case FAKE_TEST_SCAN_CARD:
-                fakeTestScanCard();
+                fakeTestScanCard(pAccessCards, pCardCount);
                 break;
             default:
                 printf("Invalid choice! Try Again! \n");
