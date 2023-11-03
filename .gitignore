@@ -6,3 +6,6 @@ obj/
 
 # Exclude .vscode folder and all its contents
 .vscode/
+
+# Exclude .DS_Store file (created by Mac OS)
+.DS_Store
