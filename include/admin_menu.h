@@ -4,6 +4,7 @@
 #include "card_management.h"
 
 enum menuChoice {
+    SHOW_MENU = 0,
     REMOTE_OPEN_DOOR = 1,
     LIST_CARDS = 2,
     ADD_REMOVE_ACCESS = 3,

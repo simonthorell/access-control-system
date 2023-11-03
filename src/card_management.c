@@ -16,17 +16,17 @@ void listAllCards(accessCard *pAccessCards, size_t *pCardCount) {
         printf("Card ID: %-10d\tStatus: %-10s\tUpdated: %s\n",
             pAccessCards[i].cardNumber,
             pAccessCards[i].cardAccess == ACCESS ? "ACCESS" : "NO ACCESS",
-            buffer); // Use buffer here in the printf statement.
+            buffer); // Print the formatted date.
     }
 }
 
 // Add or remove access for individual RFID cards
 void addRemoveAccess(accessCard *pAccessCards, size_t *pCardCount) {
     int cardNumber;
-    int cardAccess = NO_ACCESS;
+    int cardAccess;
     bool cardFound = false;
 
-    GetInputInt("Enter cardnumber: ", &cardNumber);
+    GetInputInt("Enter card ID: ", &cardNumber);
 
     // Check if card exists in access card array
     for (size_t i = 0; i < *pCardCount; i++) {
@@ -44,7 +44,7 @@ void addRemoveAccess(accessCard *pAccessCards, size_t *pCardCount) {
     // If card was not found, register it
     if (!cardFound) {
         // TO DO: REALLOC!!!
-        printf("New card with ID %d has been registered\n", cardNumber);
+        printf("New card with ID '%d' has been registered\n", cardNumber);
         pAccessCards[(*pCardCount)].cardNumber = cardNumber;    
         GetInputInt("Enter new card access (0 = NO ACCESS, 1 = ACCESS): ", &cardAccess);
         printf("Updated card with access: %d\n", cardAccess);

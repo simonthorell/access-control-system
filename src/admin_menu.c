@@ -16,6 +16,9 @@ int adminMenu(accessCard *pAccessCards, size_t *pCardCount) {
         menuChoice = getMenuChoice();
 
         switch (menuChoice) {
+            case SHOW_MENU:
+                printMenuOptions();
+                break;
             case REMOTE_OPEN_DOOR:
                 remoteOpenDoor();
                 break;
@@ -50,6 +53,6 @@ void printMenuOptions(void){
 
 int getMenuChoice(void){
     int choice;
-    GetInputInt("Enter your choice: ", &choice);
+    GetInputInt("Enter your choice (enter 0 to show options): ", &choice);
     return choice;
 }
