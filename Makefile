@@ -1,26 +1,37 @@
-PROG = main.exe
-CC = gcc
-SRC_DIR = src
+# Directories
 INC_DIR = include
+SRC_DIR = src
 OBJ_DIR = obj
 
-# Retrieve a list of source files and replace the extension .c with .o for object files
+# Compiler
+CC = gcc
+
+# Flags
+CFLAGS = -g -Wall -Wextra -Wundef -pedantic -Werror -I$(INC_DIR)
+
+# Source files
 SRC = $(wildcard $(SRC_DIR)/*.c)
+
+# Object files
 OBJ = $(SRC:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.o)
 
-CFLAGS = -g -Wall -Wextra -Wundef -pedantic -Werror -I$(INC_DIR)
-LIBS = 
+# Program name
+PROG = main.exe
 
+# Default rule
 all: $(PROG)
 
+# Linking rule
 $(PROG): $(OBJ)
-	$(CC) -o $@ $(CFLAGS) $(LDFLAGS) $^  $(LIBS)
+	$(CC) -o $@ $(OBJ) $(LIBS)
 
+# Compilation rule
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 	@mkdir -p $(OBJ_DIR)
 	$(CC) $(CFLAGS) -c $< -o $@
 
+# Clean rule
 clean:
-	rm -f $(PROG) $(OBJ)
+	rm -f $(OBJ_DIR)/*.o $(PROG)
 
 .PHONY: all clean
