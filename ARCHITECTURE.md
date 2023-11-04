@@ -34,3 +34,11 @@ Responsible for the direct interaction with the RFID hardware, providing the mea
 - **RFID Reading**: Actively listens for RFID cards presented to the reader and reads their data in `card_reader.c`.
 - **Card Authentication**: Validates the scanned RFID cards against the list of authorized cards maintained by the system.
 - **Test Scanning**: Facilitates testing and debugging of the RFID reading process through simulated card scans.
+
+## Run in docker
+- **Build**: docker build -t access_control_system .
+- **RUN**: docker run -it  --name access-control-app access_control_system
+- **STOP**: docker stop access-control-app    (NOTE! run -it flag to add command line access for container app.)
+- **SHARE IMAGE**:
+● docker save -o <path for generated tarball> <image name> // Saving image to share
+● docker load -i <path to tarball> // Loding shared image

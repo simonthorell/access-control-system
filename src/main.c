@@ -36,10 +36,11 @@ int main(void) {
         int runningCardReader = runCardReader(pAccessCards, pCardCount);
         int runningAdminConsol = runAdminConsol(pAccessCards, pCardCount);
 
-        if (!runningCardReader && !runningAdminConsol) 
+        if (!runningCardReader && !runningAdminConsol) {
             free(pAccessCards); // Free memory allocated by retrieveAccessCards()
             printf("Memory deallocated successfully!\n");
             break;
+        }
     }
 
     return 0;
@@ -84,7 +85,7 @@ int runAdminConsol(accessCard *pAccessCards, size_t *pCardCount) {
                 } else {
                     int shutdownChoice;
                     GetInputInt("Error saving cards. Enter 0 to shutdown system without saving or 1 to cancel: ", &shutdownChoice);
-                    if (choice) {
+                    if (shutdownChoice) {
                         break;
                     } else {
                         printf("Shutting down DOOR ACCESS CONTROL SYSTEM...\n");
