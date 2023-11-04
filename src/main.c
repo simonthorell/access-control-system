@@ -7,26 +7,59 @@
 #include "admin_menu.h"
 #include "card_reader.h" // MCU RFID card reader
 #include "card_management.h" // Struct for access cards
-#include "data_storage.h" // Retrieve access cards from file
+#include "data_storage.h" // Retrieve access cards from file & save to file
 
 enum choice{
     SHUTDOWN_SYSTEM = 0,
     ADMIN_MENU = 1
 };
 
-int main(void) {
-    // TODO: Load access cards from file into memory
-    // TODO: Create struct for access cards
-    size_t cardCount;
-    size_t *pCardCount = &cardCount;
-    accessCard *pAccessCards = retrieveAccessCards(&cardCount);
+int runCardReader(accessCard *pAccessCards, size_t *pCardCount);
+int runAdminConsol(accessCard *pAccessCards, size_t *pCardCount);
 
+
+int main(void) {
+    // Load access cards from file into memory
+    size_t cardCount, *pCardCount = &cardCount; // retrieveAccessCards() will count lines & update cardCount
+    accessCard *pAccessCards = retrieveAccessCards(&cardCount); // Do not forget to free memory
+
+    // Check if access cards were loaded successfully.
+    if (pAccessCards == NULL) {
+        fprintf(stderr, "Failed to load access cards. Exiting program...\n");
+        return 1;
+    } else {
+        printf("Loaded %zu access cards from file 'access_cards.csv' into memory location: %p\n", cardCount, (void *)pAccessCards);
+    }
+
+    // TODO: Run card reader and admin console in separate threads
+    while (true) {
+        int runningCardReader = runCardReader(pAccessCards, pCardCount);
+        int runningAdminConsol = runAdminConsol(pAccessCards, pCardCount);
+
+        if (!runningCardReader && !runningAdminConsol) 
+            free(pAccessCards); // Free memory allocated by retrieveAccessCards()
+            printf("Memory deallocated successfully!\n");
+            break;
+    }
+
+    return 0;
+}
+
+
+int runCardReader(accessCard *pAccessCards, size_t *pCardCount) {
+    printf("CARD READER RUNNING...\n");
     // TODO: Run 2nd thread to have MCU access card database and validate RFID cards while admin use system.
-    // while (true) {
-    //     rfidReading();
-    // }
+    // rfidReading(); // card_reader.c
     
-    printf("DOOR ACCESS CONTROL SYSTEM RUNNING...\n");
+    // TEMPORARY FOR TESTING
+    (void)pAccessCards;
+    (void)pCardCount;
+
+    return 0;
+}
+
+int runAdminConsol(accessCard *pAccessCards, size_t *pCardCount) {
+    printf("ADMIN CONSOL RUNNING...\n");
     
     int choice = 1;
 
@@ -41,31 +74,28 @@ int main(void) {
         switch (choice) {
             case SHUTDOWN_SYSTEM:
                 // End thread scanning for RFID cards - rfidReading();
-                saveCardsResult = saveAccessCards(pAccessCards, cardCount);
+                saveCardsResult = saveAccessCards(pAccessCards, *pCardCount);
 
                 // Check if save to file was successful, else prompt user to try again or shutdown without saving.
-                if (saveCardsResult == 0) {
+                if (!saveCardsResult) {
                     printf("Cards saved successfully.\n");
-                    free(pAccessCards);
                     printf("Shutting down DOOR ACCESS CONTROL SYSTEM...\n");
                     break;
                 } else {
                     int shutdownChoice;
-                    GetInputInt("Error saving cards. Enter 0 to cancel or 1 to shutdown system without saving: ", &shutdownChoice);
-                    
-                    if (choice == 0) {
+                    GetInputInt("Error saving cards. Enter 0 to shutdown system without saving or 1 to cancel: ", &shutdownChoice);
+                    if (choice) {
                         break;
                     } else {
-                        free(pAccessCards);
                         printf("Shutting down DOOR ACCESS CONTROL SYSTEM...\n");
                         break;
                     }
-
                 }
 
             case ADMIN_MENU:
                 GetInput("Enter admin password: ", inputPw, 20);
                 bool validPassword = strcmp(adminPw, inputPw) == 0;
+
                 if (validPassword) {
                     adminMenu(pAccessCards, pCardCount);
                 } else {
@@ -78,7 +108,6 @@ int main(void) {
         }
 
     } while (choice != SHUTDOWN_SYSTEM);
-    
-    // DO NOT FORGET TO free(pAccessCards); !!!!!!!!!!!!!!!
+
     return 0;
 }

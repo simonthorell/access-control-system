@@ -34,16 +34,12 @@ int cardAuthentication(accessCard *pAccessCards, size_t *pCardCount, int cardNum
 
     // Loop through all registered cards
     for (size_t i = 0; i < *pCardCount; i++) {
-        // If card is found in the list
         if (pAccessCards[i].cardNumber == cardNumber) {
-            // printf("Card found in system!\n");
-            // If card has access
+            // Check if card has access
             if (pAccessCards[i].cardAccess == ACCESS) {
-                // printf("Card has access!\n");
                 return ACCESS;
             }
             else {
-                // printf("Card does not have access!\n");
                 return NO_ACCESS;
             }
             break;
