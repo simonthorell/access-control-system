@@ -37,8 +37,13 @@ Responsible for the direct interaction with the RFID hardware, providing the mea
 
 ## Run in docker
 - **Build**: docker build -t access_control_system .
-- **RUN**: docker run -it  --name access-control-app access_control_system
+- **RUN**: docker run -it  --name access-control-app access_control_system (-it allows you to interact with a Docker container via the command line)
+
+- **ACCESS TERMINAL FROM RUNNING CONTAINER**: docker attach access-control-app
+
+- **START**: docker start -i access-control-app (-i activates STDIN for interactive mode)
 - **STOP**: docker stop access-control-app    (NOTE! run -it flag to add command line access for container app.)
+
 - **SHARE IMAGE**:
 ● docker save -o <path for generated tarball> <image name> // Saving image to share
 ● docker load -i <path to tarball> // Loding shared image
