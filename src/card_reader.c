@@ -1,9 +1,8 @@
-//#include "card_reader.h"
-#include <stdio.h>
-#include "safeinput.h"
-#include "card_management.h"
+#include <stdio.h>              // printf
+#include "safeinput.h"          // GetInputInt
+#include "card_management.h"    // Struct accessCard
+#include "door_control.h"       // Lock/unlock door
 #include "card_reader.h"
-#include "door_control.h"
 
 void fakeTestScanCard(accessCard *pAccessCards, size_t *pCardCount) {
     // Simulate the scanning of an RFID card for testing purposes
@@ -22,7 +21,7 @@ void fakeTestScanCard(accessCard *pAccessCards, size_t *pCardCount) {
 
 void rfidReading(accessCard *pAccessCards, size_t *pCardCount) {
     // TODO: scanner for RFID card data from MCU - Below for testing purposes
-    int cardNumber = 1000; // REPLACE with card ID from MCU - FAKE by typing card 1000, 1002, 1003 f.e.
+    int cardNumber = 0; // REPLACE with card ID from MCU - FAKE by typing card 1000, 1002, 1003 f.e.
     
     if (cardNumber != 0) {
         // Authenticate card (will print if card is read)
@@ -33,7 +32,8 @@ void rfidReading(accessCard *pAccessCards, size_t *pCardCount) {
         } else {
             lockUnlockMechanism(DOOR_LOCKED);
         }
-    }  
+    }
+    cardNumber = 0; // Reset card number
 }
 
 int cardAuthentication(accessCard *pAccessCards, size_t *pCardCount, int cardNumber) {

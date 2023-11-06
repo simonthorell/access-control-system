@@ -1,15 +1,15 @@
-#include <stdio.h>
-#include <stdbool.h>
-#include <string.h> // strcmp
-#include <stdlib.h> // Free memory in heap created by malloc
-#include <pthread.h> // Threads
-#include "safeinput.h"
+#include <stdio.h>           // printf
+#include <stdbool.h>         // bool
+#include <string.h>          // strcmp
+#include <stdlib.h>          // Free memory in heap created by malloc
+#include <pthread.h>         // Threads
+#include "safeinput.h"       // GetInputInt, GetInput
 
-#include "admin_menu.h"
-#include "card_reader.h" // MCU RFID card reader
+#include "admin_menu.h"      // Admin menu
+#include "card_reader.h"     // MCU RFID card reader
 #include "card_management.h" // Struct for access cards
-#include "data_storage.h" // Retrieve access cards from file & save to file
-#include "util_sleep.h" // Sleep function for Windows, Mac & Linux
+#include "data_storage.h"    // Retrieve access cards from file & save to file
+#include "util_sleep.h"      // Sleep function for Windows, Mac & Linux
 
 typedef struct {
     accessCard *pAccessCards;
@@ -22,17 +22,18 @@ enum choice{
     ADMIN_MENU = 1
 };
 
-void startThreads(ThreadArgs *args);
-void *runCardReader(void *args);
-void *runAdminConsol(void *args);
-
+void startThreads(ThreadArgs *args); // Start multithreading with 2 threads.
+void *runCardReader(void *args);     // Thread 1: MCU Card reader (Arduino/ESP32)
+void *runAdminConsol(void *args);    // Thread 2: Admin console UI (Linux/Windows/Mac)
 
 int main(void) {
+    printf("Starting Door Access Control System...\n");
+    
     // Load access cards from file into memory (heap)
     size_t cardCount, *pCardCount = &cardCount; // retrieveAccessCards() will count lines & update cardCount
     accessCard *pAccessCards = retrieveAccessCards(&cardCount); // Do not forget to free memory
 
-    // Check if access cards were loaded successfully from file to memory.
+    // Check if access cards were loaded successfully from file to heap.
     if (pAccessCards == NULL) {
         fprintf(stderr, "Failed to load access cards. Exiting program...\n");
         return 1;
@@ -40,7 +41,7 @@ int main(void) {
         printf("Loaded %zu access cards from file 'access_cards.csv' into memory location: %p\n", cardCount, (void *)pAccessCards);
     }
  
-    // Run Threads - 1. Card reader, 2. Admin console
+    // Run Threads - 1. MCU Card reader, 2. Admin console UI
     ThreadArgs args = {pAccessCards, pCardCount, true};
     startThreads(&args);
 
@@ -50,7 +51,6 @@ int main(void) {
 
     return 0;
 }
-
 
 void startThreads(ThreadArgs *args) {
     pthread_t thread1, thread2;
@@ -74,52 +74,50 @@ void startThreads(ThreadArgs *args) {
 
 void *runCardReader(void *args) {
     ThreadArgs *actualArgs = (ThreadArgs *)args;
-    printf("CARD READER RUNNING...\n");
+    printf("Card reader running...\n");
 
+    // Run the MCU card reader until the admin console shuts down the system.
     while (actualArgs->keepRunning) {
         portableSleep(1); // Sleep for a short duration to prevent this loop from consuming too much CPU.
-        rfidReading(actualArgs->pAccessCards, actualArgs->pCardCount);
+        rfidReading(actualArgs->pAccessCards, actualArgs->pCardCount); // card_reader.c
     }
 
-    printf("CARD READER TERMINATING...\n");
+    printf("Terminating card reader...\n");
     return NULL; // No need to return a value, NULL is used when the return value is not used
 }
 
 void *runAdminConsol(void *args) {
     ThreadArgs *actualArgs = (ThreadArgs *)args;
-    printf("ADMIN CONSOL RUNNING...\n");
+    printf("Admin console running...\n");
 
+    // TODO: Create encrypt/decrypt functions and store password hash in file. 
+    char adminPw[6] = "admin";  
+    
     int choice = 1;
-    char adminPw[6] = "admin";  // TODO: Create encrypt/decrypt functions and store password hash in file. 
-    char inputPw[21];
-    int saveCardsResult;
-
     do {
         GetInputInt("Enter command (0 = SHUTDOWN SYSTEM, 1 = ADMIN MENU): ", &choice);
+        char inputPw[21];
+
         switch (choice) {
             case SHUTDOWN_SYSTEM:
                 // Save the cards and determine whether to shut down
-                saveCardsResult = saveAccessCards(actualArgs->pAccessCards, *(actualArgs->pCardCount));
-                if (!saveCardsResult) {
-                    printf("Cards saved successfully.\nShutting down DOOR ACCESS CONTROL SYSTEM...\n");
+                if (!saveAccessCards(actualArgs->pAccessCards, *(actualArgs->pCardCount))) {
+                    printf("Cards saved successfully.\nShutting down Door Access Control System...\n");
                 } else {
-                    int shutdownChoice;
-                    GetInputInt("Error saving cards. Enter 0 to shutdown system without saving or 1 to cancel: ", &shutdownChoice);
-                    if (!shutdownChoice) {
+                    GetInputInt("Error saving cards. Enter 0 to shutdown system without saving or 1 to cancel: ", &choice);
+                    if (!choice) {
                         printf("Shutting down DOOR ACCESS CONTROL SYSTEM without saving...\n");
-                        choice = SHUTDOWN_SYSTEM;  // Set choice to shutdown the loop
                     } else {
                         printf("System will not shutdown. Returning to main menu...\n");
                         continue;
                     }
                 }
-                // Terminate card reader
-                actualArgs->keepRunning = false;  // Directly set the boolean value
+                actualArgs->keepRunning = false;  // Terminate card reader
                 break;
             case ADMIN_MENU:
                 GetInput("Enter admin password: ", inputPw, 20);
                 if (strcmp(adminPw, inputPw) == 0) {
-                    adminMenu(actualArgs->pAccessCards, actualArgs->pCardCount);
+                    adminMenu(actualArgs->pAccessCards, actualArgs->pCardCount); // admin_menu.c
                 } else {
                     printf("Invalid password!\n");
                 }
@@ -130,6 +128,5 @@ void *runAdminConsol(void *args) {
         }
     } while (choice != SHUTDOWN_SYSTEM);
 
-    // Return a null pointer since no value needs to be returned
-    return NULL;
+    return NULL; // Return a null pointer since no value needs to be returned
 }
