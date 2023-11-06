@@ -2,6 +2,7 @@
 #include <stdbool.h>
 #include <string.h> // strcmp
 #include <stdlib.h> // Free memory in heap created by malloc
+#include <pthread.h> // Threads
 #include "safeinput.h"
 
 #include "admin_menu.h"
@@ -9,13 +10,19 @@
 #include "card_management.h" // Struct for access cards
 #include "data_storage.h" // Retrieve access cards from file & save to file
 
+typedef struct {
+    accessCard *pAccessCards;
+    size_t *pCardCount;
+} ThreadArgs;
+
 enum choice{
     SHUTDOWN_SYSTEM = 0,
     ADMIN_MENU = 1
 };
 
-int runCardReader(accessCard *pAccessCards, size_t *pCardCount);
-int runAdminConsol(accessCard *pAccessCards, size_t *pCardCount);
+void startThreads(ThreadArgs *args);
+void *runCardReader(void *args);
+void *runAdminConsol(void *args);
 
 
 int main(void) {
@@ -30,85 +37,90 @@ int main(void) {
     } else {
         printf("Loaded %zu access cards from file 'access_cards.csv' into memory location: %p\n", cardCount, (void *)pAccessCards);
     }
+ 
+    // Start the threads
+    ThreadArgs args = {pAccessCards, pCardCount};
+    startThreads(&args);
 
-    // TODO: Run card reader and admin console in separate threads
-    while (true) {
-        int runningCardReader = runCardReader(pAccessCards, pCardCount);
-        int runningAdminConsol = runAdminConsol(pAccessCards, pCardCount);
+    free(pAccessCards); // Free memory allocated by retrieveAccessCards()
+    printf("Memory deallocated successfully!\n");
 
-        if (!runningCardReader && !runningAdminConsol) {
-            free(pAccessCards); // Free memory allocated by retrieveAccessCards()
-            printf("Memory deallocated successfully!\n");
-            break;
-        }
+    return 0;
+}
+
+
+void startThreads(ThreadArgs *args) {
+    pthread_t thread1, thread2;
+
+    // Create the card reader thread
+    if (pthread_create(&thread1, NULL, runCardReader, (void *)args)) {
+        perror("Error creating card reader thread");
+        exit(EXIT_FAILURE);
     }
 
-    return 0;
+    // Create the admin console thread
+    if (pthread_create(&thread2, NULL, runAdminConsol, (void *)args)) {
+        perror("Error creating admin console thread");
+        exit(EXIT_FAILURE);
+    }
+
+    // Wait for the threads to finish
+    pthread_join(thread1, NULL);
+    pthread_join(thread2, NULL);
 }
 
-
-int runCardReader(accessCard *pAccessCards, size_t *pCardCount) {
+void *runCardReader(void *args) {
+    ThreadArgs *actualArgs = (ThreadArgs *)args;
     printf("CARD READER RUNNING...\n");
-    // TODO: Run 2nd thread to have MCU access card database and validate RFID cards while admin use system.
-    // rfidReading(); // card_reader.c
-    
-    // TEMPORARY FOR TESTING
-    (void)pAccessCards;
-    (void)pCardCount;
 
-    return 0;
+    // Call the RFID reading function, passing the appropriate members from actualArgs
+    rfidReading(actualArgs->pAccessCards, actualArgs->pCardCount);
+
+    // Return a null pointer since no value needs to be returned
+    return NULL;
 }
 
-int runAdminConsol(accessCard *pAccessCards, size_t *pCardCount) {
+void *runAdminConsol(void *args) {
+    ThreadArgs *actualArgs = (ThreadArgs *)args;
     printf("ADMIN CONSOL RUNNING...\n");
-    
+
     int choice = 1;
+    char adminPw[6] = "admin";  // TODO: Create encrypt/decrypt functions and store password hash in file. 
+    char inputPw[21];
+    int saveCardsResult;
 
     do {
         GetInputInt("Enter command (0 = SHUTDOWN SYSTEM, 1 = ADMIN MENU): ", &choice);
-
-        char adminPw[6] = "admin"; // TODO: Replace with hashed password
-        char inputPw[21];
-
-        int saveCardsResult;
-
         switch (choice) {
             case SHUTDOWN_SYSTEM:
-                // End thread scanning for RFID cards - rfidReading();
-                saveCardsResult = saveAccessCards(pAccessCards, *pCardCount);
-
-                // Check if save to file was successful, else prompt user to try again or shutdown without saving.
+                // Save the cards and determine whether to shut down
+                saveCardsResult = saveAccessCards(actualArgs->pAccessCards, *(actualArgs->pCardCount));
                 if (!saveCardsResult) {
-                    printf("Cards saved successfully.\n");
-                    printf("Shutting down DOOR ACCESS CONTROL SYSTEM...\n");
-                    break;
+                    printf("Cards saved successfully.\nShutting down DOOR ACCESS CONTROL SYSTEM...\n");
+                    choice = SHUTDOWN_SYSTEM;  // Set choice to shutdown the loop
                 } else {
                     int shutdownChoice;
                     GetInputInt("Error saving cards. Enter 0 to shutdown system without saving or 1 to cancel: ", &shutdownChoice);
-                    if (shutdownChoice) {
-                        break;
-                    } else {
-                        printf("Shutting down DOOR ACCESS CONTROL SYSTEM...\n");
-                        break;
+                    if (!shutdownChoice) {
+                        printf("Shutting down DOOR ACCESS CONTROL SYSTEM without saving...\n");
+                        choice = SHUTDOWN_SYSTEM;  // Set choice to shutdown the loop
                     }
                 }
-
+                break;
             case ADMIN_MENU:
                 GetInput("Enter admin password: ", inputPw, 20);
-                bool validPassword = strcmp(adminPw, inputPw) == 0;
-
-                if (validPassword) {
-                    adminMenu(pAccessCards, pCardCount);
+                if (strcmp(adminPw, inputPw) == 0) {
+                    adminMenu(actualArgs->pAccessCards, actualArgs->pCardCount);
                 } else {
                     printf("Invalid password!\n");
                 }
-                continue;
+                break;
             default:
                 printf("Invalid choice! Try again!\n");
                 break;
         }
-
     } while (choice != SHUTDOWN_SYSTEM);
 
-    return 0;
+    // Return a null pointer since no value needs to be returned
+    return NULL;
 }

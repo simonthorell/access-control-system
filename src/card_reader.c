@@ -19,13 +19,31 @@ void fakeTestScanCard(accessCard *pAccessCards, size_t *pCardCount) {
     }
     else {
         printf("Card not authenticated!\n");
+        lockUnlockMechanism(DOOR_LOCKED);
     }
 
 }
 
-void rfidReading(void) {
-    // Code to handle the reading of RFID card data from MCU
-    printf("Reading RFID card...\n");
+void rfidReading(accessCard *pAccessCards, size_t *pCardCount) {
+
+    while (true) {
+        // TODO: Code to handle the reading of RFID card data from MCU
+        int cardNumber = 0; // Read card ID from MCU - FAKE by typing card 1000, 1002, 1003 f.e.
+
+        if (cardNumber != 0) {
+            // Authenticate card (will print if card is read)
+            int cardAuthenticated = cardAuthentication(pAccessCards, pCardCount, cardNumber);
+
+            // If card is authenticated, unlock door
+            if (cardAuthenticated) {
+                lockUnlockMechanism(DOOR_UNLOCKED);
+            } else {
+                lockUnlockMechanism(DOOR_LOCKED);
+            }
+        }
+
+    }
+    
 }
 
 int cardAuthentication(accessCard *pAccessCards, size_t *pCardCount, int cardNumber) {
