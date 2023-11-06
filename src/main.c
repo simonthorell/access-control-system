@@ -9,10 +9,12 @@
 #include "card_reader.h" // MCU RFID card reader
 #include "card_management.h" // Struct for access cards
 #include "data_storage.h" // Retrieve access cards from file & save to file
+#include "util_sleep.h" // Sleep function for Windows, Mac & Linux
 
 typedef struct {
     accessCard *pAccessCards;
     size_t *pCardCount;
+    volatile bool keepRunning;
 } ThreadArgs;
 
 enum choice{
@@ -26,11 +28,11 @@ void *runAdminConsol(void *args);
 
 
 int main(void) {
-    // Load access cards from file into memory
+    // Load access cards from file into memory (heap)
     size_t cardCount, *pCardCount = &cardCount; // retrieveAccessCards() will count lines & update cardCount
     accessCard *pAccessCards = retrieveAccessCards(&cardCount); // Do not forget to free memory
 
-    // Check if access cards were loaded successfully.
+    // Check if access cards were loaded successfully from file to memory.
     if (pAccessCards == NULL) {
         fprintf(stderr, "Failed to load access cards. Exiting program...\n");
         return 1;
@@ -38,11 +40,12 @@ int main(void) {
         printf("Loaded %zu access cards from file 'access_cards.csv' into memory location: %p\n", cardCount, (void *)pAccessCards);
     }
  
-    // Start the threads
-    ThreadArgs args = {pAccessCards, pCardCount};
+    // Run Threads - 1. Card reader, 2. Admin console
+    ThreadArgs args = {pAccessCards, pCardCount, true};
     startThreads(&args);
 
-    free(pAccessCards); // Free memory allocated by retrieveAccessCards()
+    // Free memory allocated by retrieveAccessCards() after the threads have finished.
+    free(pAccessCards); 
     printf("Memory deallocated successfully!\n");
 
     return 0;
@@ -73,11 +76,13 @@ void *runCardReader(void *args) {
     ThreadArgs *actualArgs = (ThreadArgs *)args;
     printf("CARD READER RUNNING...\n");
 
-    // Call the RFID reading function, passing the appropriate members from actualArgs
-    rfidReading(actualArgs->pAccessCards, actualArgs->pCardCount);
+    while (actualArgs->keepRunning) {
+        portableSleep(1); // Sleep for a short duration to prevent this loop from consuming too much CPU.
+        rfidReading(actualArgs->pAccessCards, actualArgs->pCardCount);
+    }
 
-    // Return a null pointer since no value needs to be returned
-    return NULL;
+    printf("CARD READER TERMINATING...\n");
+    return NULL; // No need to return a value, NULL is used when the return value is not used
 }
 
 void *runAdminConsol(void *args) {
@@ -97,15 +102,19 @@ void *runAdminConsol(void *args) {
                 saveCardsResult = saveAccessCards(actualArgs->pAccessCards, *(actualArgs->pCardCount));
                 if (!saveCardsResult) {
                     printf("Cards saved successfully.\nShutting down DOOR ACCESS CONTROL SYSTEM...\n");
-                    choice = SHUTDOWN_SYSTEM;  // Set choice to shutdown the loop
                 } else {
                     int shutdownChoice;
                     GetInputInt("Error saving cards. Enter 0 to shutdown system without saving or 1 to cancel: ", &shutdownChoice);
                     if (!shutdownChoice) {
                         printf("Shutting down DOOR ACCESS CONTROL SYSTEM without saving...\n");
                         choice = SHUTDOWN_SYSTEM;  // Set choice to shutdown the loop
+                    } else {
+                        printf("System will not shutdown. Returning to main menu...\n");
+                        continue;
                     }
                 }
+                // Terminate card reader
+                actualArgs->keepRunning = false;  // Directly set the boolean value
                 break;
             case ADMIN_MENU:
                 GetInput("Enter admin password: ", inputPw, 20);
