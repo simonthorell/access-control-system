@@ -25,30 +25,45 @@ void listAllCards(accessCard *pAccessCards, size_t *pCardCount) {
 // Add or remove access for individual RFID cards
 void addRemoveAccess(accessCard *pAccessCards, size_t *pCardCount) {
     int cardNumber;
-    bool cardFound = false;
-
     GetInputInt("Enter card ID: ", &cardNumber);
 
-    // Check if card exists in access card array
+    // Check if card exists in access card array - TODO: Devide array in 2 check if cardNumber is in first or second half of array...
     for (size_t i = 0; i < *pCardCount; i++) {
         if (pAccessCards[i].cardNumber == cardNumber) {
-            cardFound = true;
             const char *accessStrings[] = {"NO ACCESS", "ACCESS"};
             printf("Card with ID '%d' found with current access status: %s\n", cardNumber, accessStrings[pAccessCards[i].cardAccess]);
             updateCard(pAccessCards, pCardCount, i);
             break;
+        } else if (cardNumber < pAccessCards[i].cardNumber && cardNumber > pAccessCards[i - 1].cardNumber) {
+            // If card was not found, register it at current place (in order) in array and shift i+all right elements to the right.
+            addNewCard(&pAccessCards, pCardCount, i, cardNumber);
+            break;
         }
     }
-
-    // If card was not found, register it
-    if (!cardFound) {
-        // TO DO: REALLOC!!!
-        printf("New card with ID '%d' has been registered.\n", cardNumber);
-        pAccessCards[(*pCardCount)].cardNumber = cardNumber;
-        setCardAccess(pAccessCards, *pCardCount);
-        (*pCardCount)++;
-    }
     
+}
+
+void addNewCard(accessCard **pAccessCards, size_t *pCardCount, int cardIndex, int cardNumber) {
+    // REALLOC ARRAY
+    accessCard *temp = realloc(*pAccessCards, (*pCardCount + 1) * sizeof(accessCard));
+    if (temp == NULL) {
+        fprintf(stderr, "Error: realloc failed.\n");
+        return;
+    }
+
+    *pAccessCards = temp; // Change data under pointer pAccessCards to data under temp pointer in heap
+    
+    for (size_t i = *pCardCount; i > (size_t)cardIndex; i--) {
+        (*pAccessCards)[i] = (*pAccessCards)[i - 1];
+    }
+
+    (*pCardCount)++;
+
+    // Create new card at new empty spot (cardIndex) in array
+    printf("New card with ID '%d' has been registered.\n", cardNumber);
+    (*pAccessCards)[cardIndex].cardNumber = cardNumber;
+    setCardAccess(*pAccessCards, cardIndex);
+
 }
 
 void updateCard(accessCard *pAccessCards, size_t *pCardCount, size_t cardIndex) {

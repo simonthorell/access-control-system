@@ -17,6 +17,8 @@ enum cardAccess {
 
 void listAllCards(accessCard *pAccessCards, size_t *pCardCount);
 void addRemoveAccess(accessCard *pAccessCards, size_t *pCardCount);
+
+void addNewCard(accessCard **pAccessCards, size_t *pCardCount, int cardIndex, int cardNumber);
 void updateCard(accessCard *pAccessCards, size_t *pCardCount, size_t card);
 void setCardAccess(accessCard *pAccessCards, size_t cardIndex);
 void removeCard(accessCard **pAccessCards, size_t *pCardCount, size_t cardIndex);
