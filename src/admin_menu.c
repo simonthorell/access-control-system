@@ -7,7 +7,7 @@
 
 #include "admin_menu.h"
 
-int adminMenu(accessCard *pAccessCards, size_t *pCardCount) {
+int adminMenu(accessCard *pAccessCards, size_t *pCardsMallocated, size_t *pCardCount) {
     printMenuOptions();
     
     int menuChoice;
@@ -26,7 +26,7 @@ int adminMenu(accessCard *pAccessCards, size_t *pCardCount) {
                 listAllCards(pAccessCards, pCardCount);
                 break;
             case ADD_REMOVE_ACCESS:
-                addRemoveAccess(pAccessCards, pCardCount);
+                addRemoveAccess(pAccessCards, pCardsMallocated, pCardCount);
                 break;
             case EXIT:
                 printf("Exiting admin menu...\n");

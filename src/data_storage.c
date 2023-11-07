@@ -32,16 +32,16 @@ int saveAccessCards(accessCard *pAccessCards, size_t cardCount) {
 }
 
 // NOTE! Caller is responsible for freeing the memory allocated by this function!
-accessCard* retrieveAccessCards(size_t *cardCount) {
+accessCard* retrieveAccessCards(size_t *cardsMallocated, size_t *cardCount) {
     FILE *file = fopen("access_cards.csv", "r");
     if (!file) return NULL;
 
     char line[256]; // buffer for reading a line from the .csv file. Make smaller?? 
     *cardCount = 0;
-    size_t capacity = 10;
+    *cardsMallocated = 10; // Initial amount of cards to allocate memory for.
 
     // Allocate space for the array in the heap
-    accessCard *accessCards = malloc(capacity * sizeof(accessCard));
+    accessCard *accessCards = malloc(*cardsMallocated * sizeof(accessCard));
 
     // Skip header line
     fgets(line, sizeof(line), file);
@@ -49,9 +49,9 @@ accessCard* retrieveAccessCards(size_t *cardCount) {
     // Check that accessCards is not NULL && check that successfully read a line from the file.
     while (accessCards && fgets(line, sizeof(line), file)) {
         // CHeck if we need to resize the array, if so DOUBLE the capacity. 
-        if (*cardCount >= capacity) {
-            capacity *= 2;
-            accessCard *temp = realloc(accessCards, capacity * sizeof(accessCard));
+        if (*cardCount >= *cardsMallocated) {
+            *cardsMallocated *= 2;
+            accessCard *temp = realloc(accessCards, *cardsMallocated * sizeof(accessCard));
             if (!temp) break;
             accessCards = temp;
         }

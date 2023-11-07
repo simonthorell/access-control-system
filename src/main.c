@@ -12,8 +12,9 @@
 #include "util_sleep.h"      // Sleep function for Windows, Mac & Linux
 
 typedef struct {
-    accessCard *pAccessCards;
+    size_t *pCardsMallocated;
     size_t *pCardCount;
+    accessCard *pAccessCards;
     volatile bool keepRunning;
 } ThreadArgs;
 
@@ -30,8 +31,9 @@ int main(void) {
     printf("Starting Door Access Control System...\n");
     
     // Load access cards from file into memory (heap)
+    size_t cardsMallocated, *pCardsMallocated = &cardsMallocated; // Amount of memory currently allocated for access cards.
     size_t cardCount, *pCardCount = &cardCount; // retrieveAccessCards() will count lines & update cardCount
-    accessCard *pAccessCards = retrieveAccessCards(&cardCount); // Do not forget to free memory
+    accessCard *pAccessCards = retrieveAccessCards(&cardsMallocated, &cardCount); // Do not forget to free memory
 
     // Check if access cards were loaded successfully from file to heap.
     if (pAccessCards == NULL) {
@@ -42,7 +44,7 @@ int main(void) {
     }
  
     // Run Threads - 1. MCU Card reader, 2. Admin console UI
-    ThreadArgs args = {pAccessCards, pCardCount, true};
+    ThreadArgs args = {pCardsMallocated, pCardCount, pAccessCards, true};
     startThreads(&args);
 
     // Free memory allocated by retrieveAccessCards() after the threads have finished.
@@ -117,7 +119,7 @@ void *runAdminConsol(void *args) {
             case ADMIN_MENU:
                 GetInput("Enter admin password: ", inputPw, 20);
                 if (strcmp(adminPw, inputPw) == 0) {
-                    adminMenu(actualArgs->pAccessCards, actualArgs->pCardCount); // admin_menu.c
+                    adminMenu(actualArgs->pAccessCards, actualArgs->pCardsMallocated, actualArgs->pCardCount); // admin_menu.c
                 } else {
                     printf("Invalid password!\n");
                 }
