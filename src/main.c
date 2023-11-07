@@ -31,8 +31,10 @@ int main(void) {
     printf("Starting Door Access Control System...\n");
     
     // Load access cards from file into memory (heap)
-    size_t cardsMallocated, *pCardsMallocated = &cardsMallocated; // Amount of memory currently allocated for access cards.
-    size_t cardCount, *pCardCount = &cardCount; // retrieveAccessCards() will count lines & update cardCount
+    size_t cardsMallocated = 10; // Initial value to alloc for amount of cards
+    size_t *pCardsMallocated = &cardsMallocated;
+    size_t cardCount = 0; // retrieveAccessCards() will count lines & update cardCount
+    size_t *pCardCount = &cardCount; 
     accessCard *pAccessCards = retrieveAccessCards(&cardsMallocated, &cardCount); // Do not forget to free memory
 
     // Check if access cards were loaded successfully from file to heap.

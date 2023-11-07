@@ -37,8 +37,6 @@ accessCard* retrieveAccessCards(size_t *cardsMallocated, size_t *cardCount) {
     if (!file) return NULL;
 
     char line[256]; // buffer for reading a line from the .csv file. Make smaller?? 
-    *cardCount = 0;
-    *cardsMallocated = 10; // Initial amount of cards to allocate memory for.
 
     // Allocate space for the array in the heap
     accessCard *accessCards = malloc(*cardsMallocated * sizeof(accessCard));
