@@ -1,13 +1,7 @@
 # TODO
 
 ## Card Management
-- Realloc add new card. 
-- Sort array of cards. 
-    1) Sort and realloc when add/remove card. 
-    2) Sort (and remove NULL lines) when saving cards to file. 
-- Implement merge sort
-- Change for-loop to list cards faster when sorted. 
-
+- Change REALLOC STRUCTURE! Pass variable capacity from data_storage.c - Realloc 2x capacity once capacity is < 
 - Datatype for RFID cards?
 - Add "cold storage" for deleted cards ?
 

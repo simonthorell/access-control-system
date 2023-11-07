@@ -27,36 +27,48 @@ void addRemoveAccess(accessCard *pAccessCards, size_t *pCardCount) {
     int cardNumber;
     GetInputInt("Enter card ID: ", &cardNumber);
 
-    // Check if card exists in access card array - TODO: Devide array in 2 check if cardNumber is in first or second half of array...
-    for (size_t i = 0; i < *pCardCount; i++) {
-        if (pAccessCards[i].cardNumber == cardNumber) {
+    // Binary search for card number
+    int left = 0;
+    int right = *pCardCount - 1;
+    int middle;
+    bool found = false;
+
+    while (left <= right) {
+        middle = left + (right - left) / 2; // To prevent potential overflow
+        if (pAccessCards[middle].cardNumber == cardNumber) {
             const char *accessStrings[] = {"NO ACCESS", "ACCESS"};
-            printf("Card with ID '%d' found with current access status: %s\n", cardNumber, accessStrings[pAccessCards[i].cardAccess]);
-            updateCard(pAccessCards, pCardCount, i);
+            printf("Card with ID '%d' found with current access status: %s\n", cardNumber, accessStrings[pAccessCards[middle].cardAccess]);
+            updateCard(pAccessCards, pCardCount, middle);
+            found = true;
             break;
-        } else if (cardNumber < pAccessCards[i].cardNumber && cardNumber > pAccessCards[i - 1].cardNumber) {
-            // If card was not found, register it at current place (in order) in array and shift i+all right elements to the right.
-            addNewCard(&pAccessCards, pCardCount, i, cardNumber);
-            break;
+        } else if (cardNumber < pAccessCards[middle].cardNumber) {
+            right = middle - 1;
+        } else {
+            left = middle + 1;
         }
+    }
+
+    // If the card is not found, the `left` variable now points to the position where the card should be inserted.
+    if (!found) {
+        // If the card is not found, the `left` variable now points to the position where the card should be inserted.
+        addNewCard(&pAccessCards, pCardCount, left, cardNumber);
     }
     
 }
 
 void addNewCard(accessCard **pAccessCards, size_t *pCardCount, int cardIndex, int cardNumber) {
-    // REALLOC ARRAY
+    // Add 1 to cardCount and realloc memory to increase array size by 1. 
     accessCard *temp = realloc(*pAccessCards, (*pCardCount + 1) * sizeof(accessCard));
     if (temp == NULL) {
         fprintf(stderr, "Error: realloc failed.\n");
         return;
     }
 
+    // Loop through array and shift all elements after cardIndex to the right by one position.
     *pAccessCards = temp; // Change data under pointer pAccessCards to data under temp pointer in heap
-    
     for (size_t i = *pCardCount; i > (size_t)cardIndex; i--) {
         (*pAccessCards)[i] = (*pAccessCards)[i - 1];
     }
-
     (*pCardCount)++;
 
     // Create new card at new empty spot (cardIndex) in array
