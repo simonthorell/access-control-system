@@ -57,13 +57,11 @@ void addRemoveAccess(accessCard *pAccessCards, size_t *pCardsMallocated, size_t 
 }
 
 void addNewCard(accessCard **pAccessCards, size_t *pCardsMallocated, size_t *pCardCount, int cardIndex, int cardNumber) {
-    accessCard *temp = NULL;
-
     // Check if there is space for card within current memory allocation, if not - double allocation. 
     if (*pCardCount >= *pCardsMallocated) {
         // Attempt to double the amount of allocated memory
         *pCardsMallocated *= 2;
-        temp = realloc(*pAccessCards, *pCardsMallocated * sizeof(accessCard));
+        accessCard *temp = realloc(*pAccessCards, *pCardsMallocated * sizeof(accessCard*));
         if (!temp) {
             // If realloc fails, we print an error message and return early to avoid writing into a null pointer.
             fprintf(stderr, "Error: realloc failed.\n");
@@ -71,14 +69,10 @@ void addNewCard(accessCard **pAccessCards, size_t *pCardsMallocated, size_t *pCa
         }
         // If realloc succeeds, we update the original pointer to point to the newly allocated memory.
         *pAccessCards = temp;
-    } else {
-        // If we have enough allocated memory, we can just use the original pointer.
-        temp = *pAccessCards;  
     }
 
     // Loop through array and shift all elements after cardIndex to the right by one position.
-    *pAccessCards = temp; // Change data under pointer pAccessCards to data under temp pointer in heap
-    for (size_t i = *pCardCount; i > (size_t)cardIndex; i--) {
+        for (size_t i = *pCardCount; i > (size_t)cardIndex; i--) {
         (*pAccessCards)[i] = (*pAccessCards)[i - 1];
     }
     (*pCardCount)++;
