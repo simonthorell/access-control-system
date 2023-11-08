@@ -5,7 +5,7 @@
 #include <unistd.h>  // Include for close function
 
 #define PORT 80
-#define SERVER_IP "your_wemos_ip_address"  // Replace with the IP address of your Wemos
+#define SERVER_IP "192.168.50.133"  // IP Address of MCU wifi server
 
 int wifiWrite(const char *command) {
     int sock;

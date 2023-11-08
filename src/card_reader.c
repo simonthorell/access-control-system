@@ -27,34 +27,41 @@ void fakeTestScanCard(accessCard *pAccessCards, size_t *pCardCount) {
 }
 
 void rfidReading(accessCard *pAccessCards, size_t *pCardCount) {
-    // TODO: Change type from int to char* to read RFID card number from MCU.
-    int cardNumber = 0; // REPLACE with card ID from MCU - FAKE by typing card 1000, 1002, 1003 f.e.
-
     // Call serialRead() function to read from serial port. Add your own serial port path.
     int serial_port = open("/dev/cu.usbserial-110", O_RDWR); // 'ls /dev/tty.*' (list usb devices on mac)
 
     while (1) {
+        int cardNumber = 0; // REPLACE with card ID from MCU - FAKE by typing card 1000, 1002, 1003 f.e.
+        // Read from serial port
         char *line = serialRead(serial_port);
         if (line) {
             printf("\nAccess card read with RFID: %s", line);
+            // Authenticate card (will print if card is read)
+            
+            // TODO: Change type from int to char* to read RFID card number from MCU.
+            // cardNumber = atoi(line); // Convert string to int
+            cardNumber = 1001; // FAKE card number for testing
+
+            // Change to != NULL once using RFID as card number? => Remove temp variable cardNumber?
+            if (cardNumber != 0) {
+                // Authenticate card (will print if card is read)
+                int cardAuthenticated = cardAuthentication(pAccessCards, pCardCount, cardNumber);
+                // If card is authenticated, unlock door
+                if (cardAuthenticated) {
+                    lockUnlockMechanism(DOOR_UNLOCKED);
+                } else {
+                    lockUnlockMechanism(DOOR_LOCKED);
+                }
+            }
+            cardNumber = 0; // Reset card number
+
             free(line); // Free the allocated memory
         }
         sleep(1); // Wait for 1 second before reading again
     }
     close(serial_port); // Remember to close the port
     
-
-    if (cardNumber != 0) {
-        // Authenticate card (will print if card is read)
-        int cardAuthenticated = cardAuthentication(pAccessCards, pCardCount, cardNumber);
-        // If card is authenticated, unlock door
-        if (cardAuthenticated) {
-            lockUnlockMechanism(DOOR_UNLOCKED);
-        } else {
-            lockUnlockMechanism(DOOR_LOCKED);
-        }
-    }
-    cardNumber = 0; // Reset card number
+    
 }
 
 int cardAuthentication(accessCard *pAccessCards, size_t *pCardCount, int cardNumber) {
