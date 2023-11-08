@@ -6,11 +6,10 @@
 
 // Serial read includes
 #include "connect_serial.h"     // Serial read function
-#include <stdlib.h>             // malloc, free
+#include <fcntl.h>              // open
+#include <stdlib.h>             // free
 #include <string.h>             // memset
 #include <unistd.h>             // read
-#include <fcntl.h>              // open
-#include <errno.h>              // errno
 
 void fakeTestScanCard(accessCard *pAccessCards, size_t *pCardCount) {
     // Simulate the scanning of an RFID card for testing purposes
@@ -28,28 +27,21 @@ void fakeTestScanCard(accessCard *pAccessCards, size_t *pCardCount) {
 }
 
 void rfidReading(accessCard *pAccessCards, size_t *pCardCount) {
-    // TODO: scanner for RFID card data from MCU - Below for testing purposes
+    // TODO: Change type from int to char* to read RFID card number from MCU.
     int cardNumber = 0; // REPLACE with card ID from MCU - FAKE by typing card 1000, 1002, 1003 f.e.
-    
 
-    // 'ls /dev/tty.*' (list usb devices on mac)
-
-    // CALL SERIAL READ FUNCTION
-    int serial_port = open("/dev/tty.usbserial-110", O_RDWR); // Change this to your serial port!
+    // Call serialRead() function to read from serial port. Add your own serial port path.
+    int serial_port = open("/dev/cu.usbserial-110", O_RDWR); // 'ls /dev/tty.*' (list usb devices on mac)
 
     while (1) {
         char *line = serialRead(serial_port);
         if (line) {
-            cardNumber = atoi(line);  // Simple, no error checking
-            printf("Received: %s\n", line);
+            printf("\nAccess card read with RFID: %s", line);
             free(line); // Free the allocated memory
         }
-
         sleep(1); // Wait for 1 second before reading again
     }
-
     close(serial_port); // Remember to close the port
-    // END SERIAL READ FUNCTION
     
 
     if (cardNumber != 0) {

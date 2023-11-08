@@ -39,5 +39,6 @@ char* serialRead(int serial_port) {
     }
 
     actual_data[num_bytes] = '\0'; // Null-terminate the string
+    // printf("Read %i bytes. Received message: %s\n", num_bytes, actual_data);
     return actual_data;
 }
