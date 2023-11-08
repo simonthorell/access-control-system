@@ -80,9 +80,10 @@ void addNewCard(accessCard **pAccessCards, size_t *pCardsMallocated, size_t *pCa
     printf("%zu cards stored and current allocation is %zu cards.\n", *pCardCount, *pCardsMallocated);
 
     // Create new card at new empty spot (cardIndex) in array
-    printf("New card with ID '%d' has been registered.\n", cardNumber);
+    
     (*pAccessCards)[cardIndex].cardNumber = cardNumber;
     setCardAccess(*pAccessCards, cardIndex);
+    printf("New card with ID '%d' has been registered.\n", cardNumber);
 }
 
 void updateCard(accessCard *pAccessCards, size_t *pCardCount, size_t cardIndex) {
