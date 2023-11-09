@@ -3,6 +3,10 @@
 
 void fakeTestScanCard(accessCard *pAccessCards, size_t *pCardCount);
 void rfidReading(accessCard *pAccessCards, size_t *pCardCount);
-int cardAuthentication(accessCard *pAccessCards, size_t *pCardCount, int cardNumber);
+int cardAuthentication(accessCard *pAccessCards, size_t *pCardCount, unsigned int cardNumber);
+
+// Convert RFID card number to unsigned int and vice versa.
+unsigned int hexToUint(char *hexString);
+char *uintToHex(unsigned int cardNumber);
 
 #endif

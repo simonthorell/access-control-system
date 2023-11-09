@@ -15,17 +15,33 @@ void listAllCards(accessCard *pAccessCards, size_t *pCardCount) {
         // Format the dateCreated of the card into "YYYY-MM-DD HH:MM".
         strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M", localtime(&(pAccessCards[i].dateCreated)));
 
-        printf("Card ID: %-10d\tStatus: %-10s\tUpdated: %s\n",
-            pAccessCards[i].cardNumber,
+        char *cardNumberString = malloc(sizeof(char) * 12); // 8 chars + 3 spaces + \0 = 12 chars
+        cardNumberString = uintToHex(pAccessCards[i].cardNumber); // card_reader.c
+        // char *cardNumberString = uintToHex(pAccessCards[i].cardNumber); // card_reader.c
+
+        printf("Card ID: %s\tStatus: %-10s\tUpdated: %s\n",
+            cardNumberString,
             pAccessCards[i].cardAccess == ACCESS ? "ACCESS" : "NO ACCESS",
             buffer); // Print the formatted date.
+
+        free(cardNumberString);
+
+        // For testing! Print the unsigned int card number (cards are sorted by unsigned int card number).
+        // printf("Card ID: %-10u\tStatus: %-10s\tUpdated: %s\n",
+        //     pAccessCards[i].cardNumber,
+        //     pAccessCards[i].cardAccess == ACCESS ? "ACCESS" : "NO ACCESS",
+        //     buffer); // Print the formatted date.
     }
 }
 
 // Add or remove access for individual RFID cards
 void addRemoveAccess(accessCard *pAccessCards, size_t *pCardsMallocated, size_t *pCardCount) {
-    int cardNumber;
-    GetInputInt("Enter card ID: ", &cardNumber);
+    char *cardNumberInput = malloc(sizeof(char) * 12); // 8 chars + 3 spaces + \0 = 12 chars => CHANGE TO GLOBAL VARIABLE? 
+    GetInput("Enter card ID: ", cardNumberInput, 12);
+    unsigned int cardNumber = hexToUint(cardNumberInput);
+    // printf("Card ID: %s\n", cardNumberInput);
+    // printf("Card ID: %u\n", cardNumber);
+    free(cardNumberInput);
 
     // Binary search for card number
     int left = 0;
@@ -56,7 +72,7 @@ void addRemoveAccess(accessCard *pAccessCards, size_t *pCardsMallocated, size_t 
     
 }
 
-void addNewCard(accessCard **pAccessCards, size_t *pCardsMallocated, size_t *pCardCount, int cardIndex, int cardNumber) {
+void addNewCard(accessCard **pAccessCards, size_t *pCardsMallocated, size_t *pCardCount, int cardIndex, unsigned int cardNumber) {
     // Check if there is space for card within current memory allocation, if not - double allocation. 
     if (*pCardCount >= *pCardsMallocated) {
         // Attempt to double the amount of allocated memory

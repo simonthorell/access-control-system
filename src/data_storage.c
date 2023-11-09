@@ -56,7 +56,7 @@ accessCard* retrieveAccessCards(size_t *cardsMallocated, size_t *cardCount) {
 
         // Temp variables to store the parsed values
         char statusStr[20];
-        int cardNumber;
+        unsigned int cardNumber;
         time_t dateCreated;
 
         // Read the CSV line and parse it

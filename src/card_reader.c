@@ -1,4 +1,6 @@
 #include <stdio.h>              // printf
+#include <math.h>               // sprintf
+#include <ctype.h>              // toupper
 #include "safeinput.h"          // GetInputInt
 #include "card_management.h"    // Struct accessCard
 #include "door_control.h"       // Lock/unlock door
@@ -31,18 +33,17 @@ void rfidReading(accessCard *pAccessCards, size_t *pCardCount) {
     int serial_port = open("/dev/cu.usbserial-110", O_RDWR); // 'ls /dev/tty.*' (list usb devices on mac)
 
     while (1) {
-        int cardNumber = 0; // REPLACE with card ID from MCU - FAKE by typing card 1000, 1002, 1003 f.e.
+        unsigned int cardNumber = 0; // REPLACE with card ID from MCU - FAKE by typing card 1000, 1002, 1003 f.e.
         // Read from serial port
         char *line = serialRead(serial_port);
         if (line) {
             printf("\nAccess card read with RFID: %s", line);
-            // Authenticate card (will print if card is read)
+            cardNumber = hexToUint(line); // Convert hex string to unsigned int
+            printf("\nAccess card read with RFID: %u\n", cardNumber);
+            // printf("\nAccess card read with RFID: %s\n", uintToHex(cardNumberLong)); // Convert unsigned int to char*
             
-            // TODO: Change type from int to char* to read RFID card number from MCU.
-            // cardNumber = atoi(line); // Convert string to int
-            cardNumber = 1001; // FAKE card number for testing
-
-            // Change to != NULL once using RFID as card number? => Remove temp variable cardNumber?
+            // Authenticate card (will print if card is read)
+            // cardNumber = 1001; // FAKE card number for testing
             if (cardNumber != 0) {
                 // Authenticate card (will print if card is read)
                 int cardAuthenticated = cardAuthentication(pAccessCards, pCardCount, cardNumber);
@@ -64,7 +65,7 @@ void rfidReading(accessCard *pAccessCards, size_t *pCardCount) {
     
 }
 
-int cardAuthentication(accessCard *pAccessCards, size_t *pCardCount, int cardNumber) {
+int cardAuthentication(accessCard *pAccessCards, size_t *pCardCount, unsigned int cardNumber) {
     // Loop through all registered cards to validate RFID card against the authorized list
     for (size_t i = 0; i < *pCardCount; i++) {
         if (pAccessCards[i].cardNumber == cardNumber) {
@@ -78,4 +79,47 @@ int cardAuthentication(accessCard *pAccessCards, size_t *pCardCount, int cardNum
         }
     }
     return NO_ACCESS; // FALL BACK = NO ACCESS (0)
+}
+
+unsigned int hexToUint(char *hexString) {
+    // Convert hex string to unsigned int
+
+    unsigned int hexValue = 0;
+    for (size_t i = 0; i < strlen(hexString); i++) {
+        if (hexString[i] == ' ') {
+            continue;
+        }
+
+        if (hexString[i] >= '0' && hexString[i] <= '9') {
+            hexValue = hexValue * 16 + (hexString[i] - '0');
+        } else if (hexString[i] >= 'a' && hexString[i] <= 'f') {
+            hexValue = hexValue * 16 + (hexString[i] - 'a' + 10);
+        } else if (hexString[i] >= 'A' && hexString[i] <= 'F') {
+            hexValue = hexValue * 16 + (hexString[i] - 'A' + 10);
+        }
+    }
+    
+    return hexValue;
+}
+
+// Do not forget to free the allocated memory after use!
+char *uintToHex(unsigned int cardNumber) {
+    // Convert unsigned int to char*
+    char *cardNumberString = malloc(sizeof(char) * 12); // 8 chars + 3 spaces + \0 = 12 chars
+    if (cardNumberString == NULL) {
+        printf("Error allocating memory for cardNumberString\n");
+        exit(EXIT_FAILURE);
+    }
+
+    sprintf(cardNumberString, "%02X %02X %02X %02X", 
+            (cardNumber >> 24) & 0xFF, 
+            (cardNumber >> 16) & 0xFF, 
+            (cardNumber >> 8) & 0xFF, 
+            cardNumber & 0xFF);
+
+    for (int i = 0; cardNumberString[i]; i++) {
+        cardNumberString[i] = toupper(cardNumberString[i]);
+    }
+
+    return cardNumberString;
 }
