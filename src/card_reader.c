@@ -37,10 +37,9 @@ unsigned int rfidReading(accessCard *pAccessCards, size_t *pCardCount) {
         // Read from serial port
         char *line = serialRead(serial_port);
         if (line) {
-            printf("\nAccess card read with RFID: %s", line);
+            // printf("\nAccess card read with RFID: %s", line);
             cardNumber = hexToUint(line); // Convert hex string to unsigned int
-            printf("\nAccess card read with RFID: %u\n", cardNumber);
-            // printf("\nAccess card read with RFID: %s\n", uintToHex(cardNumberLong)); // Convert unsigned int to char*
+            // printf("\nAccess card read with RFID: %u\n", cardNumber);
             
             // Authenticate card (will print if card is read)
             // cardNumber = 1001; // FAKE card number for testing
@@ -54,16 +53,12 @@ unsigned int rfidReading(accessCard *pAccessCards, size_t *pCardCount) {
                     lockUnlockMechanism(DOOR_LOCKED);
                 }
             }
-            return cardNumber; // Return card number
-            cardNumber = 0; // Reset card number
-
             free(line); // Free the allocated memory
+            return cardNumber; // Return card number
         }
-        sleep(1); // Wait for 1 second before reading again
+        sleep(1); // Wait for 1 second before reading again        
     }
     close(serial_port); // Remember to close the port
-    
-    
 }
 
 int cardAuthentication(accessCard *pAccessCards, size_t *pCardCount, unsigned int cardNumber) {

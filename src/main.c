@@ -8,6 +8,7 @@
 #include "card_reader.h"     // MCU RFID card reader
 #include "card_management.h" // Struct for access cards
 #include "data_storage.h"    // Retrieve access cards from file & save to file
+#include "util_sleep.h"      // portableSleep
 
 typedef struct {
     size_t *pCardsMallocated;
@@ -84,9 +85,9 @@ void *runCardReader(void *args) {
 
     // Run the MCU card reader until the admin console shuts down the system.
     while (actualArgs->keepRunning) {
-        // portableSleep(1); // Sleep for a short duration to prevent this loop from consuming too much CPU.
         *actualArgs->pCardRead = rfidReading(actualArgs->pAccessCards, actualArgs->pCardCount); // card_reader.c
-        // Suppress unused variable warning
+        portableSleep(1); // Sleep for a short duration to prevent this loop from consuming too much CPU.
+        *actualArgs->pCardRead = 0; // Reset cardRead to 0 after reading card
     }
 
     printf("Terminating card reader...\n");

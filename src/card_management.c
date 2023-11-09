@@ -42,30 +42,29 @@ void addRemoveAccess(accessCard *pAccessCards, size_t *pCardsMallocated, size_t 
     printf("2. Enter card ID manually\n");
     int choice = GetInputInt("Enter your choice: ", &choice);
 
-    char *cardNumberInput = malloc(sizeof(char) * 12); // 8 chars + 3 spaces + \0 = 12 chars => CHANGE TO GLOBAL VARIABLE?
-
-    switch (choice) {
-        case 1:
+    while (true) {
+        if (choice == 1) {
             printf("Scan RFID card...\n");
-            while (*pCardRead == 0) {
-                // Wait for card to be read by MCU RFID card reader
-                // TODO: Add timeout
-            }
-            printf("Card read: %u\n", *pCardRead);
-            cardNumber = *pCardRead;
+                while (*pCardRead == 0) {
+                    // Wait for card to be read by MCU RFID card reader
+                    // TODO: Add timeout
+                }
+                printf("Card read with RFID: %s\n", uintToHex(*pCardRead));
+                cardNumber = *pCardRead;
             break;
-        case 2:
-            if (*pCardRead != 0) {
-                printf("Card read: %u\n", *pCardRead);
-            }
+        } else if (choice == 2) {
+            char *cardNumberInput = malloc(sizeof(char) * 12); // 8 chars + 3 spaces + \0 = 12 chars => CHANGE TO GLOBAL VARIABLE?
             GetInput("Enter card ID: ", cardNumberInput, 12);
             cardNumber = hexToUint(cardNumberInput);
             // printf("Card ID: %s\n", cardNumberInput);
             // printf("Card ID: %u\n", cardNumber);
+            free(cardNumberInput);
             break;
+        } else {
+            printf("Invalid choice! Try Again! \n");
+            return;
+        }
     }
-    
-    free(cardNumberInput);
 
     // Binary search for card number
     int left = 0;
@@ -77,7 +76,7 @@ void addRemoveAccess(accessCard *pAccessCards, size_t *pCardsMallocated, size_t 
         middle = left + (right - left) / 2; // To prevent potential overflow
         if (pAccessCards[middle].cardNumber == cardNumber) {
             const char *accessStrings[] = {"NO ACCESS", "ACCESS"};
-            printf("Card with ID '%d' found with current access status: %s\n", cardNumber, accessStrings[pAccessCards[middle].cardAccess]);
+            printf("Card with RFID '%s' found with current access status: %s\n", uintToHex(*pCardRead), accessStrings[pAccessCards[middle].cardAccess]);
             updateCard(pAccessCards, pCardCount, middle);
             found = true;
             break;

@@ -16,20 +16,20 @@ void lockUnlockMechanism(int doorLock) {
             // Code to send signal to MCU to unlock door => GREEN LED
             // wifiWrite("green"); // connect_wifi.c
 
-            // Test code
-            printf("CURRENTLY LAMP IS: Green\n");
-            // KEEP DOOR UNLOCKED FOR 3 SECONDS
-            portableSleep(3);
+            // Code for testing only
+            // printf("CURRENTLY LAMP IS: Green\n");
+            
+            portableSleep(3); // KEEP DOOR UNLOCKED FOR 3 SECONDS
             lockUnlockMechanism(DOOR_LOCKED);
             break;
         case DOOR_LOCKED:
             // Code to send signal to MCU to lock door => RED LED
             // wifiWrite("red"); // connect_wifi.c
 
-            // Test code
-            printf("CURRENTLY LAMP IS: Red\n");
-            portableSleep(3);
-            printf("CURRENTLY LAMP IS: Off\n");
+            // Code for testing only
+            // printf("CURRENTLY LAMP IS: Red\n");
+            // portableSleep(3);
+            // printf("CURRENTLY LAMP IS: Off\n");
             break;
     }
 }
