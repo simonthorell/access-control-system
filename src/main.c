@@ -4,18 +4,17 @@
 #include <stdlib.h>          // Free memory in heap created by malloc
 #include <pthread.h>         // Threads
 #include "safeinput.h"       // GetInputInt, GetInput
-
 #include "admin_menu.h"      // Admin menu
 #include "card_reader.h"     // MCU RFID card reader
 #include "card_management.h" // Struct for access cards
 #include "data_storage.h"    // Retrieve access cards from file & save to file
-// #include "util_sleep.h"      // Sleep function for Windows, Mac & Linux
 
 typedef struct {
     size_t *pCardsMallocated;
     size_t *pCardCount;
     accessCard *pAccessCards;
     volatile bool keepRunning;
+    unsigned int *pCardRead; // Last read card number from MCU RFID card reader
 } ThreadArgs;
 
 enum choice{
@@ -29,13 +28,16 @@ void *runAdminConsol(void *args);    // Thread 2: Admin console UI (Linux/Window
 
 int main(void) {
     printf("Starting Door Access Control System...\n");
-    
+
     // Load access cards from file into memory (heap)
     size_t cardsMallocated = 10; // Initial value to alloc for amount of cards
     size_t *pCardsMallocated = &cardsMallocated;
     size_t cardCount = 0; // retrieveAccessCards() will count lines & update cardCount
     size_t *pCardCount = &cardCount; 
     accessCard *pAccessCards = retrieveAccessCards(&cardsMallocated, &cardCount); // Do not forget to free memory
+
+    unsigned int cardRead = 0;           // Card number read by MCU RFID card reader
+    unsigned int *pCardRead = &cardRead; // Pointer to last card read by MCU RFID card reader.
 
     // Check if access cards were loaded successfully from file to heap.
     if (pAccessCards == NULL) {
@@ -46,7 +48,7 @@ int main(void) {
     }
  
     // Run Threads - 1. MCU Card reader, 2. Admin console UI
-    ThreadArgs args = {pCardsMallocated, pCardCount, pAccessCards, true};
+    ThreadArgs args = {pCardsMallocated, pCardCount, pAccessCards, true, pCardRead};
     startThreads(&args);
 
     // Free memory allocated by retrieveAccessCards() after the threads have finished.
@@ -83,7 +85,8 @@ void *runCardReader(void *args) {
     // Run the MCU card reader until the admin console shuts down the system.
     while (actualArgs->keepRunning) {
         // portableSleep(1); // Sleep for a short duration to prevent this loop from consuming too much CPU.
-        rfidReading(actualArgs->pAccessCards, actualArgs->pCardCount); // card_reader.c
+        *actualArgs->pCardRead = rfidReading(actualArgs->pAccessCards, actualArgs->pCardCount); // card_reader.c
+        // Suppress unused variable warning
     }
 
     printf("Terminating card reader...\n");
@@ -121,7 +124,7 @@ void *runAdminConsol(void *args) {
             case ADMIN_MENU:
                 GetInput("Enter admin password: ", inputPw, 20);
                 if (strcmp(adminPw, inputPw) == 0) {
-                    adminMenu(actualArgs->pAccessCards, actualArgs->pCardsMallocated, actualArgs->pCardCount); // admin_menu.c
+                    adminMenu(actualArgs->pAccessCards, actualArgs->pCardsMallocated, actualArgs->pCardCount, actualArgs->pCardRead); // admin_menu.c
                 } else {
                     printf("Invalid password!\n");
                 }

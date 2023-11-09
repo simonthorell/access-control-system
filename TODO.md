@@ -1,8 +1,7 @@
 # TODO
 
 ## Card Management
-- Change REALLOC STRUCTURE! Pass variable capacity from data_storage.c - Realloc 2x capacity once capacity is < 
-- Datatype for RFID cards?
+- Add timeout when adding new card by scanning RFID card. 
 - Add "cold storage" for deleted cards ?
 
 ## UI external libraries

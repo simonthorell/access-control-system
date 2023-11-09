@@ -28,7 +28,7 @@ void fakeTestScanCard(accessCard *pAccessCards, size_t *pCardCount) {
     }
 }
 
-void rfidReading(accessCard *pAccessCards, size_t *pCardCount) {
+unsigned int rfidReading(accessCard *pAccessCards, size_t *pCardCount) {
     // Call serialRead() function to read from serial port. Add your own serial port path.
     int serial_port = open("/dev/cu.usbserial-110", O_RDWR); // 'ls /dev/tty.*' (list usb devices on mac)
 
@@ -54,6 +54,7 @@ void rfidReading(accessCard *pAccessCards, size_t *pCardCount) {
                     lockUnlockMechanism(DOOR_LOCKED);
                 }
             }
+            return cardNumber; // Return card number
             cardNumber = 0; // Reset card number
 
             free(line); // Free the allocated memory

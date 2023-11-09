@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "card_management.h"
+#include "card_management.h" // time.h
 #include "safeinput.h"
 #include "data_storage.h"
 #include "card_reader.h"
@@ -35,12 +35,36 @@ void listAllCards(accessCard *pAccessCards, size_t *pCardCount) {
 }
 
 // Add or remove access for individual RFID cards
-void addRemoveAccess(accessCard *pAccessCards, size_t *pCardsMallocated, size_t *pCardCount) {
-    char *cardNumberInput = malloc(sizeof(char) * 12); // 8 chars + 3 spaces + \0 = 12 chars => CHANGE TO GLOBAL VARIABLE? 
-    GetInput("Enter card ID: ", cardNumberInput, 12);
-    unsigned int cardNumber = hexToUint(cardNumberInput);
-    // printf("Card ID: %s\n", cardNumberInput);
-    // printf("Card ID: %u\n", cardNumber);
+void addRemoveAccess(accessCard *pAccessCards, size_t *pCardsMallocated, size_t *pCardCount, unsigned int *pCardRead) {
+    unsigned int cardNumber;
+
+    printf("1. Scan RFID card\n");
+    printf("2. Enter card ID manually\n");
+    int choice = GetInputInt("Enter your choice: ", &choice);
+
+    char *cardNumberInput = malloc(sizeof(char) * 12); // 8 chars + 3 spaces + \0 = 12 chars => CHANGE TO GLOBAL VARIABLE?
+
+    switch (choice) {
+        case 1:
+            printf("Scan RFID card...\n");
+            while (*pCardRead == 0) {
+                // Wait for card to be read by MCU RFID card reader
+                // TODO: Add timeout
+            }
+            printf("Card read: %u\n", *pCardRead);
+            cardNumber = *pCardRead;
+            break;
+        case 2:
+            if (*pCardRead != 0) {
+                printf("Card read: %u\n", *pCardRead);
+            }
+            GetInput("Enter card ID: ", cardNumberInput, 12);
+            cardNumber = hexToUint(cardNumberInput);
+            // printf("Card ID: %s\n", cardNumberInput);
+            // printf("Card ID: %u\n", cardNumber);
+            break;
+    }
+    
     free(cardNumberInput);
 
     // Binary search for card number
@@ -99,7 +123,7 @@ void addNewCard(accessCard **pAccessCards, size_t *pCardsMallocated, size_t *pCa
     
     (*pAccessCards)[cardIndex].cardNumber = cardNumber;
     setCardAccess(*pAccessCards, cardIndex);
-    printf("New card with ID '%d' has been registered.\n", cardNumber);
+    printf("New card with ID '%s' has been registered.\n", uintToHex(cardNumber));
 }
 
 void updateCard(accessCard *pAccessCards, size_t *pCardCount, size_t cardIndex) {

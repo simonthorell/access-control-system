@@ -12,7 +12,7 @@ enum menuChoice {
     FAKE_TEST_SCAN_CARD = 9
 };
 
-int adminMenu(accessCard *pAccessCards, size_t *pCardsMallocated, size_t *pCardCount);
+int adminMenu(accessCard *pAccessCards, size_t *pCardsMallocated, size_t *pCardCount, unsigned int *pCardRead);
 void printMenuOptions(void);
 int getMenuChoice(void);
 

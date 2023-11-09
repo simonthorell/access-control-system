@@ -2,7 +2,7 @@
 #define CARD_READER_H
 
 void fakeTestScanCard(accessCard *pAccessCards, size_t *pCardCount);
-void rfidReading(accessCard *pAccessCards, size_t *pCardCount);
+unsigned int rfidReading(accessCard *pAccessCards, size_t *pCardCount);
 int cardAuthentication(accessCard *pAccessCards, size_t *pCardCount, unsigned int cardNumber);
 
 // Convert RFID card number to unsigned int and vice versa.

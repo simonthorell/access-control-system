@@ -18,7 +18,7 @@ int saveAccessCards(accessCard *pAccessCards, size_t cardCount) {
         const char* statusStr = pAccessCards[i].cardAccess == ACCESS ? "ACCESS" : "NO_ACCESS";
         
         // Write the CSV line
-        if (fprintf(file, "%d,%s,%ld\n", 
+        if (fprintf(file, "%u,%s,%ld\n", 
                     pAccessCards[i].cardNumber, 
                     statusStr, 
                     pAccessCards[i].dateCreated) < 0) {
