@@ -1,16 +1,19 @@
 #include <stdio.h>           // printf
 #include <stdbool.h>         // bool
-#include <string.h>          // strcmp
-#include <stdlib.h>          // Free memory in heap created by malloc
+#include <string.h>          // strcmp (check pw)
+#include <stdlib.h>          // free (memory deallocation)
 #include <pthread.h>         // Threads
-#include "safeinput.h"       // GetInputInt, GetInput
-#include "admin_menu.h"      // Admin menu
-#include "card_reader.h"     // MCU RFID card reader
-#include "card_management.h" // Struct for access cards
-#include "data_storage.h"    // Retrieve access cards from file & save to file
-#include "util_sleep.h"      // portableSleep
 
-#include "connect_wifi.h"    // Connect to Wemos D1 Mini controlling door lock
+#include "safeinput.h"       // GetInputInt, GetInput
+#include "admin_menu.h"      // Admin console UI menu
+#include "card_reader.h"     // RFID card reader functions (RFID MCU connected via serial port)
+#include "card_management.h" // Struct for access cards
+#include "data_storage.h"    // Retrieve access cards from file & save to file (.csv)
+#include "util_sleep.h"      // portableSleep (Windos/Linux/Mac compatible sleep function)
+#include "connect_tcp_ip.h"  // Connect to door controller MCU wireless via TCP/IP
+
+// IP address of wireless door microcontroller (ESP8266)
+const char* ipAddressDoorController = "192.168.50.254"; // Make sure to use port 23 (defined in connect_wifi.h)
 
 typedef struct {
     size_t *pCardsMallocated;
@@ -50,9 +53,26 @@ int main(void) {
         printf("Loaded %zu access cards from file 'access_cards.csv' into memory location: %p\n", cardCount, (void *)pAccessCards);
     }
 
-    // Run Threads - 1. MCU Card reader, 2. Admin console UI
+    // Establish TCP/IP connection to door controller - connect_wifi.c
+    while (sock == -1) {
+        int connected = establishConnection(ipAddressDoorController);
+        if (connected != -1) {
+            printf("Connected (return code %d) to wireless door controller (ESP8266EX MCU) and established TCP/IP socket: %d\n", connected, sock);
+            break;
+        } else {
+            printf("Failed to connect to door controller. Retrying...\n");
+        }
+        portableSleep(500); // Wait for 1 second before trying again
+    }
+
+    // Run program in two threads:
+    // 1. MCU Card reader
+    // 2. Admin console UI
     ThreadArgs args = {pCardsMallocated, pCardCount, pAccessCards, true, pCardRead};
     startThreads(&args);
+
+    // close TCP/IP connection to door controller
+    closeConnection();
 
     // Free memory allocated by retrieveAccessCards() after the threads have finished.
     free(pAccessCards); 
@@ -84,6 +104,10 @@ void startThreads(ThreadArgs *args) {
 void *runCardReader(void *args) {
     ThreadArgs *actualArgs = (ThreadArgs *)args;
     printf("Card reader running...\n");
+    
+    // if (sock = -1;) {
+    //     establishConnection();
+    // }
 
     // Run the MCU card reader until the admin console shuts down the system.
     while (actualArgs->keepRunning) {

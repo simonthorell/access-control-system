@@ -4,10 +4,7 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <string.h>
-
-/* Make sure to configure your MCU with static IP address "192.168.50.254" and port 23 */
-
-#define PORT 23
+#include "connect_tcp_ip.h"
 
 // Global socket descriptor
 int sock = -1;
@@ -36,15 +33,11 @@ int establishConnection(const char* ipAddress) {
         return -1;
     }
 
-    // printf("Connected to the ESP8266 at %s\n", ipAddress);
     return 0;
 }
 
-#define BUFFER_SIZE 1024
-#define TIMEOUT_SECONDS 10
-
-// Write a command to the ESP8266
-void wifiWrite(const char* command) {
+// Write a command to the ESP8266 microcontroller
+int wifiWrite(const char* command) {
     if (sock != -1) {
         send(sock, command, strlen(command), 0);
         // printf("Command sent: %s\n", command);
@@ -60,14 +53,18 @@ void wifiWrite(const char* command) {
 
         int bytesReceived = recv(sock, buffer, BUFFER_SIZE - 1, 0);
         if (bytesReceived > 0) {
-            printf("Response: %s\n", buffer);
+            // printf("Response: %s\n", buffer);
+            return 0;
         } else if (bytesReceived == 0) {
             printf("Connection closed by the ESP8266.\n");
+            return -1;
         } else {
             printf("No response within the timeout period or error in receiving.\n");
+            return -1;
         }
     } else {
         printf("Connection not established.\n");
+        return -1;
     }
 }
 
@@ -79,5 +76,3 @@ void closeConnection(void) {
         // printf("Connection closed.\n");
     }
 }
-
-

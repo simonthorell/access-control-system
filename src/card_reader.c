@@ -14,6 +14,9 @@
 #include <string.h>             // memset
 #include <unistd.h>             // read
 
+// Establish connection to door controller (ESP8266)
+#include "connect_tcp_ip.h"       // sock
+
 void fakeTestScanCard(accessCard *pAccessCards, size_t *pCardCount) {
     // Simulate the scanning of an RFID card for testing purposes
     int cardNumber;
@@ -57,6 +60,7 @@ unsigned int rfidReading(accessCard *pAccessCards, size_t *pCardCount) {
             free(line); // Free the allocated memory
             return cardNumber; // Return card number
         }
+
         portableSleep(500); // Wait for 0.5 second before reading again
     }
     close(serial_port); // Remember to close the port
