@@ -4,6 +4,7 @@
 #include "safeinput.h"          // GetInputInt
 #include "card_management.h"    // Struct accessCard
 #include "door_control.h"       // Lock/unlock door
+#include "util_sleep.h"         // portableSleep
 #include "card_reader.h"
 
 // Serial read includes
@@ -56,7 +57,7 @@ unsigned int rfidReading(accessCard *pAccessCards, size_t *pCardCount) {
             free(line); // Free the allocated memory
             return cardNumber; // Return card number
         }
-        sleep(1); // Wait for 1 second before reading again        
+        portableSleep(500); // Wait for 0.5 second before reading again
     }
     close(serial_port); // Remember to close the port
 }

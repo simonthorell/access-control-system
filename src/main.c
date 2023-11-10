@@ -10,6 +10,8 @@
 #include "data_storage.h"    // Retrieve access cards from file & save to file
 #include "util_sleep.h"      // portableSleep
 
+#include "connect_wifi.h"    // Connect to Wemos D1 Mini controlling door lock
+
 typedef struct {
     size_t *pCardsMallocated;
     size_t *pCardCount;
@@ -47,7 +49,7 @@ int main(void) {
     } else {
         printf("Loaded %zu access cards from file 'access_cards.csv' into memory location: %p\n", cardCount, (void *)pAccessCards);
     }
- 
+
     // Run Threads - 1. MCU Card reader, 2. Admin console UI
     ThreadArgs args = {pCardsMallocated, pCardCount, pAccessCards, true, pCardRead};
     startThreads(&args);
@@ -86,7 +88,7 @@ void *runCardReader(void *args) {
     // Run the MCU card reader until the admin console shuts down the system.
     while (actualArgs->keepRunning) {
         *actualArgs->pCardRead = rfidReading(actualArgs->pAccessCards, actualArgs->pCardCount); // card_reader.c
-        portableSleep(1); // Sleep for a short duration to prevent this loop from consuming too much CPU.
+        portableSleep(500); // Sleep for a short duration to prevent this loop from consuming too much CPU.
         *actualArgs->pCardRead = 0; // Reset cardRead to 0 after reading card
     }
 
