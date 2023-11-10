@@ -25,12 +25,6 @@ void listAllCards(accessCard *pAccessCards, size_t *pCardCount) {
             buffer); // Print the formatted date.
 
         free(cardNumberString);
-
-        // For testing! Print the unsigned int card number (cards are sorted by unsigned int card number).
-        // printf("Card ID: %-10u\tStatus: %-10s\tUpdated: %s\n",
-        //     pAccessCards[i].cardNumber,
-        //     pAccessCards[i].cardAccess == ACCESS ? "ACCESS" : "NO ACCESS",
-        //     buffer); // Print the formatted date.
     }
 }
 
@@ -40,24 +34,23 @@ void addRemoveAccess(accessCard *pAccessCards, size_t *pCardsMallocated, size_t 
 
     printf("1. Scan RFID card\n");
     printf("2. Enter card ID manually\n");
-    int choice = GetInputInt("Enter your choice: ", &choice);
-
+   
     while (true) {
+        int choice;
+        GetInputInt("Enter your choice: ", &choice);
+
         if (choice == 1) {
             printf("Scan RFID card...\n");
-                while (*pCardRead == 0) {
-                    // Wait for card to be read by MCU RFID card reader
-                    // TODO: Add timeout
-                }
-                printf("Card read with RFID: %s\n", uintToHex(*pCardRead));
-                cardNumber = *pCardRead;
+            while (*pCardRead == 0) {
+                // Wait for card to be read by MCU RFID card reader
+                // TODO: Add timeout
+            }
+            cardNumber = *pCardRead;
             break;
         } else if (choice == 2) {
             char *cardNumberInput = malloc(sizeof(char) * 12); // 8 chars + 3 spaces + \0 = 12 chars => CHANGE TO GLOBAL VARIABLE?
             GetInput("Enter card ID: ", cardNumberInput, 12);
             cardNumber = hexToUint(cardNumberInput);
-            // printf("Card ID: %s\n", cardNumberInput);
-            // printf("Card ID: %u\n", cardNumber);
             free(cardNumberInput);
             break;
         } else {
@@ -89,8 +82,23 @@ void addRemoveAccess(accessCard *pAccessCards, size_t *pCardsMallocated, size_t 
 
     // If the card is not found, the `left` variable now points to the position where the card should be inserted.
     if (!found) {
-        // If the card is not found, the `left` variable now points to the position where the card should be inserted.
-        addNewCard(&pAccessCards, pCardsMallocated, pCardCount, left, cardNumber);
+        // Ask to add new card
+        while (true) {
+            int choice;
+            printf("Card with RFID '%s' not found. Do you want to add a new card?\n", uintToHex(*pCardRead));
+            printf("1. Yes\n");
+            printf("2. No (back)\n");
+            GetInputInt("Enter choice: ", &choice);
+
+            if (choice == 1) {
+                // If the card is not found, the `left` variable now points to the position where the card should be inserted.
+                addNewCard(&pAccessCards, pCardsMallocated, pCardCount, left, cardNumber);
+                break;
+            } else {
+                break;
+            }
+        }
+
     }
     
 }
