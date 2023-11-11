@@ -34,6 +34,7 @@ void addRemoveAccess(accessCard *pAccessCards, size_t *pCardsMallocated, size_t 
 
     printf("1. Scan RFID card\n");
     printf("2. Enter card ID manually\n");
+    // printf("3. Exit\n");
    
     while (true) {
         int choice;
@@ -171,7 +172,7 @@ void setCardAccess(accessCard *pAccessCards, size_t cardIndex) {
 void removeCard(accessCard **pAccessCards, size_t *pCardCount, size_t cardIndex) {
     // printf("Card count: %zu\n", *pCardCount);
     // printf("Card index '%zu'...\n", cardIndex);
-    printf("Removing card with ID '%d'...\n", (*pAccessCards)[cardIndex].cardNumber);
+    printf("Removing card with ID '%s'...\n", uintToHex((*pAccessCards)[cardIndex].cardNumber));
 
     // Check if the cardIndex is valid
     if (cardIndex >= *pCardCount) {

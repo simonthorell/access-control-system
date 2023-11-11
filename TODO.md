@@ -25,6 +25,8 @@
 ## conio.h
 - UI interface
 
+## Struct name AccessCard
+- Change to start with capital letter for good convention!
 
 
 

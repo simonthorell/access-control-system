@@ -32,9 +32,10 @@ void fakeTestScanCard(accessCard *pAccessCards, size_t *pCardCount) {
     }
 }
 
-unsigned int rfidReading(accessCard *pAccessCards, size_t *pCardCount) {
+unsigned int rfidReading(accessCard *pAccessCards, size_t *pCardCount, const char *rfidSerialPort) {
     // Call serialRead() function to read from serial port. Add your own serial port path.
-    int serial_port = open("/dev/cu.usbserial-110", O_RDWR); // 'ls /dev/tty.*' (list usb devices on mac)
+    int serial_port = open(rfidSerialPort, O_RDWR);
+    // int serial_port = open("/dev/cu.usbserial-110", O_RDWR); // 'ls /dev/tty.*' (list usb devices on mac)
 
     while (1) {
         unsigned int cardNumber = 0; // REPLACE with card ID from MCU - FAKE by typing card 1000, 1002, 1003 f.e.

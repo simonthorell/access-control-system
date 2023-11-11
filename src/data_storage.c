@@ -71,3 +71,75 @@ accessCard* retrieveAccessCards(size_t *cardsMallocated, size_t *cardCount) {
     fclose(file);
     return accessCards; // Caller is responsible for freeing the memory!!!
 }
+
+void saveConfig(const char* filename, Configuration *config) {
+    FILE *file;
+
+    file = fopen(filename, "w");
+    if (file == NULL) {
+        perror("Error opening file");
+        return;
+    }
+
+    fprintf(file, "rfid_serial_port = %s\n", config->rfid_serial_port);
+    fprintf(file, "door_ip_address = %s\n", config->door_ip_address);
+    fprintf(file, "door_tcp_port = %d\n", config->door_tcp_port);
+
+    fclose(file);
+    // When calling function: 
+    // Read the config
+    // Configuration *config = readConfig("config.ini");
+
+    // Check if config is not NULL
+    // if (config != NULL) {
+    //     // Modify the config as needed
+    //     // Example: strcpy(config->rfid_serial_port, "COM4");
+    //     // config->door_tcp_port = 1234;
+
+    //     // Save the updated config
+    //     saveConfig("config.ini", config);
+
+    //     // Don't forget to free the config memory after usage
+    //     free(config);
+    // }
+}
+
+Configuration* readConfig(const char* filename) {
+    const int MAX_LINE_LENGTH = 256;
+    FILE *file;
+    char line[MAX_LINE_LENGTH];
+    Configuration *config = malloc(sizeof(Configuration));
+
+    // Ensure the memory allocation was successful
+    if (config == NULL) {
+        perror("Memory allocation failed");
+        return NULL;
+    }
+
+    // Initialize the struct to default values
+    strcpy(config->rfid_serial_port, "");
+    strcpy(config->door_ip_address, "");
+    config->door_tcp_port = 0;
+
+    file = fopen(filename, "r");
+    if (file == NULL) {
+        perror("Error opening file");
+        free(config); // Free the allocated memory if file opening fails
+        return NULL;
+    }
+
+    while (fgets(line, MAX_LINE_LENGTH, file)) {
+        line[strcspn(line, "\n")] = 0; // Remove newline character
+
+        if (strstr(line, "rfid_serial_port") != NULL) {
+            sscanf(line, "rfid_serial_port = %s", config->rfid_serial_port);
+        } else if (strstr(line, "door_ip_address") != NULL) {
+            sscanf(line, "door_ip_address = %s", config->door_ip_address);
+        } else if (strstr(line, "door_tcp_port") != NULL) {
+            sscanf(line, "door_tcp_port = %d", &config->door_tcp_port);
+        }
+    }
+
+    fclose(file);
+    return config;
+}
