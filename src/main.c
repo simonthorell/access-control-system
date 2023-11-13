@@ -16,9 +16,9 @@ typedef struct {
     size_t *pCardsMallocated;
     size_t *pCardCount;
     accessCard *pAccessCards;
-    Configuration *pConfig;   // Pointer to Configuration struct
-    unsigned int *pCardRead; // Last read card number from MCU RFID card reader
-    volatile bool keepRunning;
+    Configuration *pConfig;     // Pointer to Configuration struct
+    unsigned int *pCardRead;    // Last read card number from MCU RFID card reader
+    volatile bool keepRunning;  // TODO: Change to atomic bool
 } ThreadArgs;
 
 enum choice{
@@ -56,7 +56,7 @@ int main(void) {
      if (pConfig != NULL) {
         ThreadArgs args;
         memset(&args, 0, sizeof(args)); // Initialize args to zero
-        args.pConfig = pConfig; // Set the config pointer in ThreadArgs
+        args.pConfig = pConfig;         // Set the config pointer in ThreadArgs
     }
 
     // Establish TCP/IP connection to door controller - connect_wifi.c
@@ -71,9 +71,7 @@ int main(void) {
         portableSleep(500); // Wait for 1 second before trying again
     }
 
-    // Run program in two threads:
-    // 1. MCU Card reader
-    // 2. Admin console UI
+    // Start multithreading - 1. MCU Card reader, 2. Admin console UI
     ThreadArgs args = {pCardsMallocated, pCardCount, pAccessCards, pConfig, pCardRead, true};
     startThreads(&args);
 
@@ -81,7 +79,7 @@ int main(void) {
     closeConnection();
 
     // Clean up memory
-    free(pAccessCards); // Free memory allocated by retrieveAccessCards() in data_storage.c
+    free(pAccessCards);  // Free memory allocated by retrieveAccessCards() in data_storage.c
     free(pConfig);       // Free memory allocated by readConfig() in data_storage.c
     printf("Memory deallocated successfully!\n");
 
