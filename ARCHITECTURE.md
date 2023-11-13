@@ -1,7 +1,7 @@
 # System Architecture Overview
 This document outlines the core architecture and functionalities of the RFID-based access control system, structured into distinct components.  
 The system will use a microcontroller (Arduino or ESP32) to read and write to RFID cards via serial port.   
-The microcontroller will also contain to LED's (green and red) to emulate unlocked/locked door depending if access is granted.  
+The microcontroller will also contain to LED's (green and red) to emulate unlocked/locked door depending if access is granted.
 
 ## Admin Menu
 The Admin Menu is the central hub for system administrators to manage access control and system settings. Implemented in `admin_menu.c`.   
@@ -44,6 +44,18 @@ Responsible for the direct interaction with the RFID hardware, providing the mea
 - **START**: docker start -i access-control-app (-i activates STDIN for interactive mode)
 - **STOP**: docker stop access-control-app    (NOTE! run -it flag to add command line access for container app.)
 
-- **SHARE IMAGE**:
+- **SHARE IMAGE BY FILE**:
 ● docker save -o <path for generated tarball> <image name> // Saving image to share
 ● docker load -i <path to tarball> // Loding shared image
+
+## Autorun docker container on remote Linux Server
+- **PUSH IMAGE TO DOCKER HUB** (Use your Docker Hub username. Tag could be f.e. version_1.0)
+docker tag access_control_system:latest USERNAME/access-control-app:TAG
+docker push USERNAME/access-control-app:TAG
+
+- **PULL IMAGE FROM DOCKER HUB**
+docker pull USERNAME/access-control-app:TAG
+
+- **RUN IMAGE ON SERVER** (Use your Dockerhub Username. Tag could be f.e. version_1.0. Also change the USB device to your RFID reader - below usually work in Linux)
+docker run -it --device=/dev/ttyUSB0:/dev/ttyUSB0 --name access-control-app USERNAME/access-control-app:TAG
+docker update --restart always access-control-app

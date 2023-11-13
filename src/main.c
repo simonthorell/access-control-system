@@ -83,7 +83,7 @@ int main(void) {
     free(pConfig);       // Free memory allocated by readConfig() in data_storage.c
     printf("Memory deallocated successfully!\n");
 
-    return 0;
+    return EXIT_SUCCESS;
 }
 
 void startThreads(ThreadArgs *args) {

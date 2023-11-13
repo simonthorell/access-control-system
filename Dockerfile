@@ -10,6 +10,7 @@ COPY include/ ./include/
 
 # Include other files needed for the program to run
 COPY access_cards.csv ./
+COPY config.ini ./
 
 # Compile your program, ensuring gcc knows where to find the header files
 # Here, we are assuming all .c files in the src directory need to be compiled.
