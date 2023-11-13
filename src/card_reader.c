@@ -9,7 +9,7 @@
 
 // Serial read includes
 #include "connect_serial.h"     // Serial read function
-#include <fcntl.h>              // open
+// #include <fcntl.h>              // open
 #include <stdlib.h>             // free
 #include <string.h>             // memset
 #include <unistd.h>             // read
@@ -32,9 +32,9 @@ void fakeTestScanCard(accessCard *pAccessCards, size_t *pCardCount) {
     }
 }
 
-unsigned int rfidReading(accessCard *pAccessCards, size_t *pCardCount, const char *rfidSerialPort) {
+unsigned int rfidReading(accessCard *pAccessCards, size_t *pCardCount, int serial_port) {
     // Call serialRead() function to read from serial port. Add your own serial port path.
-    int serial_port = open(rfidSerialPort, O_RDWR);
+    // int serial_port = open(rfidSerialPort, O_RDWR);
     // int serial_port = open("/dev/cu.usbserial-110", O_RDWR); // 'ls /dev/tty.*' (list usb devices on mac)
 
     while (1) {
@@ -64,7 +64,7 @@ unsigned int rfidReading(accessCard *pAccessCards, size_t *pCardCount, const cha
 
         portableSleep(500); // Wait for 0.5 second before reading again
     }
-    close(serial_port); // Remember to close the port
+    // close(serial_port); // Remember to close the port
 }
 
 int cardAuthentication(accessCard *pAccessCards, size_t *pCardCount, unsigned int cardNumber) {

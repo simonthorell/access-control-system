@@ -7,7 +7,7 @@
 #include "card_reader.h"
 
 void listAllCards(accessCard *pAccessCards, size_t *pCardCount) {
-    printf("Listing all registered access cards...\n");
+    printf("\n\033[1;90m************************ REGISTERED ACCESS CARDS ************************\033[0m\n");
 
     for (size_t i = 0; i < *pCardCount; i++) {
         char buffer[20]; // Buffer to hold the formatted date.
@@ -26,19 +26,22 @@ void listAllCards(accessCard *pAccessCards, size_t *pCardCount) {
 
         free(cardNumberString);
     }
+    printf("\033[1;90m*************************************************************************\033[0m\n");
 }
 
 // Add or remove access for individual RFID cards
 void addRemoveAccess(accessCard *pAccessCards, size_t *pCardsMallocated, size_t *pCardCount, unsigned int *pCardRead) {
     unsigned int cardNumber;
 
+    // TODO: Move all submenus to admin_menu.c
+    printf("\n");
     printf("1. Scan RFID card\n");
     printf("2. Enter card ID manually\n");
-    // printf("3. Exit\n");
+    printf("3. Back\n");
    
     while (true) {
         int choice;
-        GetInputInt("Enter your choice: ", &choice);
+        GetInputInt("\033[4mEnter your option:\033[0m ", &choice);
 
         if (choice == 1) {
             printf("Scan RFID card...\n");
@@ -54,9 +57,11 @@ void addRemoveAccess(accessCard *pAccessCards, size_t *pCardsMallocated, size_t 
             cardNumber = hexToUint(cardNumberInput);
             free(cardNumberInput);
             break;
+        } else if (choice == 3) {
+            printf("Exiting...\n");
+            return;
         } else {
             printf("Invalid choice! Try Again! \n");
-            return;
         }
     }
 

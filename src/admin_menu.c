@@ -44,15 +44,17 @@ int adminMenu(accessCard *pAccessCards, size_t *pCardsMallocated, size_t *pCardC
 }
 
 void printMenuOptions(void){
+    printf("\n\033[1;90m******** ADMIN MENU ********\033[0m\n");
     printf("1. Remote open door\n");
     printf("2. List all cards in system\n");
-    printf("3. Add/remove access\n");
-    printf("4. Exit\n");
-    printf("9. FAKE TEST SCAN CARD\n");
+    printf("3. Add/update/remove cards\n");
+    printf("4. Exit admin menu\n");
+    printf("9. Test scan fake card\n");
+    printf("\033[1;90m****************************\033[0m\n");
 }
 
 int getMenuChoice(void){
     int choice;
-    GetInputInt("Enter your choice (enter 0 to show options): ", &choice);
+    GetInputInt("\n\033[4mEnter your option (0 = options)\033[0m: ", &choice);
     return choice;
 }

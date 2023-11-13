@@ -3,6 +3,7 @@
 #include <string.h>          // strcmp (check pw)
 #include <stdlib.h>          // free (memory deallocation)
 #include <pthread.h>         // Threads
+#include <fcntl.h>           // open (serial port)
 
 #include "safeinput.h"       // GetInputInt, GetInput
 #include "admin_menu.h"      // Admin console UI menu
@@ -22,8 +23,8 @@ typedef struct {
 } ThreadArgs;
 
 enum choice{
-    SHUTDOWN_SYSTEM = 0,
-    ADMIN_MENU = 1
+    ADMIN_MENU = 1,
+    SHUTDOWN_SYSTEM = 2
 };
 
 void startThreads(ThreadArgs *args); // Start multithreading with 2 threads.
@@ -31,7 +32,7 @@ void *runCardReader(void *args);     // Thread 1: MCU Card reader (Arduino/ESP32
 void *runAdminConsol(void *args);    // Thread 2: Admin console UI (Linux/Windows/Mac)
 
 int main(void) {
-    printf("Starting Door Access Control System...\n");
+    printf("\n\033[1m*** DOOR ACCESS CONTROL SYSTEM ***\033[0m\n");
 
     // Load access cards from file into memory (heap)
     size_t cardsMallocated = 10; // Initial value to alloc for amount of cards
@@ -45,10 +46,10 @@ int main(void) {
 
     // Check if access cards were loaded successfully from file to heap.
     if (pAccessCards == NULL) {
-        fprintf(stderr, "Failed to load access cards. Exiting program...\n");
+        fprintf(stderr, "\033[31m* Failed to load access cards. Exiting program...\033[0m\n");
         return 1;
     } else {
-        printf("Loaded %zu access cards from file 'access_cards.csv' into memory location: %p\n", cardCount, (void *)pAccessCards);
+        printf("\033[32m* Loaded %zu access cards from file 'access_cards.csv' into memory location: %p\033[0m\n", cardCount, (void *)pAccessCards);
     }
 
     // Load hardware specifications from 'config.ini' file into memory (s)
@@ -63,10 +64,10 @@ int main(void) {
     while (sock == -1) {
         int connected = establishConnection(pConfig->door_ip_address);
         if (connected != -1) {
-            printf("Connected (return code %d) to wireless door controller (ESP8266EX MCU) and established TCP/IP socket: %d\n", connected, sock);
+            printf("\033[32m* Connected to wireless door controller (ESP8266EX MCU) with return code %d and established TCP/IP socket: %d\033[0m\n", connected, sock);
             break;
         } else {
-            printf("Failed to connect to door controller. Retrying...\n");
+            printf("\033[31m* Failed to connect to door controller. Retrying...\033[0m\n");
         }
         portableSleep(500); // Wait for 1 second before trying again
     }
@@ -81,7 +82,7 @@ int main(void) {
     // Clean up memory
     free(pAccessCards);  // Free memory allocated by retrieveAccessCards() in data_storage.c
     free(pConfig);       // Free memory allocated by readConfig() in data_storage.c
-    printf("Memory deallocated successfully!\n");
+    printf("\033[32m* Memory deallocated successfully!\033[0m\n");
 
     return EXIT_SUCCESS;
 }
@@ -108,32 +109,57 @@ void startThreads(ThreadArgs *args) {
 
 void *runCardReader(void *args) {
     ThreadArgs *actualArgs = (ThreadArgs *)args;
-    printf("Card reader running...\n");
+
+    int serial_port = open(actualArgs->pConfig->rfid_serial_port, O_RDWR);
+    if (serial_port == -1) {
+        printf("\033[31m* Could not connect to RFID reader on serial port '%s' \033[0m\033[33m(Check serial port settings in admin menu!)\033[0m\n", actualArgs->pConfig->rfid_serial_port);
+        // printf("\033[31mCard RFID reader NOT running!\033[0m\n");
+        return NULL;
+    } else {
+        printf("\033[32m* Connected to RFID reader on serial port %s\n", actualArgs->pConfig->rfid_serial_port);
+        // printf("\033[32m*** Card RFID reader running!*** \n");
+    }
 
     // Run the MCU card reader until the admin console shuts down the system.
     while (actualArgs->keepRunning) {
-        *actualArgs->pCardRead = rfidReading(actualArgs->pAccessCards, actualArgs->pCardCount, actualArgs->pConfig->rfid_serial_port); // card_reader.c
+        *actualArgs->pCardRead = rfidReading(actualArgs->pAccessCards, actualArgs->pCardCount, serial_port); // card_reader.c
         portableSleep(500); // Sleep for a short duration to prevent this loop from consuming too much CPU.
         *actualArgs->pCardRead = 0; // Reset cardRead to 0 after reading card
     }
 
-    printf("Terminating card reader...\n");
+    close(serial_port); // Remember to close the port
+
+    printf("* Terminating card reader...\n");
     return NULL; // No need to return a value, NULL is used when the return value is not used
 }
 
 void *runAdminConsol(void *args) {
     ThreadArgs *actualArgs = (ThreadArgs *)args;
-    printf("Admin console running...\n");
+    // printf("*** Admin console running! ***\n");
 
     // TODO: Create encrypt/decrypt functions and store password hash in file. 
     char adminPw[6] = "admin";  
     
+    portableSleep(1000); // TODO: Temporary fix to wait for card reader to start up. Replace with mutex.
+
     int choice = 1;
     do {
-        GetInputInt("Enter command (0 = SHUTDOWN SYSTEM, 1 = ADMIN MENU): ", &choice);
+        printf("\n\033[1;90m*** SYSTEM MENU ***\033[0m\n");
+        printf("1. Admin menu\n");
+        printf("2. Shutdown system\n");
+        printf("\033[1;90m******************\033[0m\n\n");
+        GetInputInt("\033[4mEnter your option:\033[0m ", &choice);
         char inputPw[21];
 
         switch (choice) {
+            case ADMIN_MENU:
+                GetInput("\033[4mEnter password:\033[0m ", inputPw, 20);
+                if (strcmp(adminPw, inputPw) == 0) {
+                    adminMenu(actualArgs->pAccessCards, actualArgs->pCardsMallocated, actualArgs->pCardCount, actualArgs->pCardRead); // admin_menu.c
+                } else {
+                    printf("Invalid password!\n");
+                }
+                break;
             case SHUTDOWN_SYSTEM:
                 // Save the cards and determine whether to shut down
                 if (!saveAccessCards(actualArgs->pAccessCards, *(actualArgs->pCardCount))) {
@@ -148,15 +174,7 @@ void *runAdminConsol(void *args) {
                     }
                 }
                 actualArgs->keepRunning = false;  // Terminate card reader
-                break;
-            case ADMIN_MENU:
-                GetInput("Enter admin password: ", inputPw, 20);
-                if (strcmp(adminPw, inputPw) == 0) {
-                    adminMenu(actualArgs->pAccessCards, actualArgs->pCardsMallocated, actualArgs->pCardCount, actualArgs->pCardRead); // admin_menu.c
-                } else {
-                    printf("Invalid password!\n");
-                }
-                break;
+                break;    
             default:
                 printf("Invalid choice! Try again!\n");
                 break;
