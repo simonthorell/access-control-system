@@ -1,7 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <ctype.h>              // isxdigit
+#include <stdbool.h>            // bool
+#include <string.h>             // strlen
 
-#include "card_management.h" // time.h
+#include "admin_menu.h"         // I/O functions
+#include "card_management.h"    // time.h
 #include "safeinput.h"
 #include "data_storage.h"
 #include "card_reader.h"
@@ -15,9 +19,8 @@ void listAllCards(accessCard *pAccessCards, size_t *pCardCount) {
         // Format the dateCreated of the card into "YYYY-MM-DD HH:MM".
         strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M", localtime(&(pAccessCards[i].dateCreated)));
 
-        char *cardNumberString = malloc(sizeof(char) * 12); // 8 chars + 3 spaces + \0 = 12 chars
+        char *cardNumberString = malloc(sizeof(char) * CARD_ID_LENGTH); // 8 chars + 3 spaces + \0 = 12 chars
         cardNumberString = uintToHex(pAccessCards[i].cardNumber); // card_reader.c
-        // char *cardNumberString = uintToHex(pAccessCards[i].cardNumber); // card_reader.c
 
         printf("Card ID: %s\tStatus: %-10s\tUpdated: %s\n",
             cardNumberString,
@@ -32,33 +35,24 @@ void listAllCards(accessCard *pAccessCards, size_t *pCardCount) {
 // Add or remove access for individual RFID cards
 void addRemoveAccess(accessCard *pAccessCards, size_t *pCardsMallocated, size_t *pCardCount, unsigned int *pCardRead) {
     unsigned int cardNumber;
-
-    // TODO: Move all submenus to admin_menu.c
-    printf("\n");
-    printf("1. Scan RFID card\n");
-    printf("2. Enter card ID manually\n");
-    printf("3. Back\n");
+    int choice = ScanCardSubMenu(); // admin_menu.c
    
     while (true) {
-        int choice;
-        GetInputInt("\033[4mEnter your option:\033[0m ", &choice);
-
         if (choice == 1) {
             printf("Scan RFID card...\n");
             while (*pCardRead == 0) {
-                // Wait for card to be read by MCU RFID card reader
-                // TODO: Add timeout
+                // TODO: Add timeout - Wait for card to be read by MCU RFID card reader
             }
             cardNumber = *pCardRead;
             break;
         } else if (choice == 2) {
-            char *cardNumberInput = malloc(sizeof(char) * 12); // 8 chars + 3 spaces + \0 = 12 chars => CHANGE TO GLOBAL VARIABLE?
-            GetInput("Enter card ID: ", cardNumberInput, 12);
+            char *cardNumberInput = malloc(sizeof(char) * CARD_ID_LENGTH); // 8 chars + 3 spaces + \0 = 12 chars => CHANGE TO GLOBAL VARIABLE?
+            getCardNumber(cardNumberInput, CARD_ID_LENGTH); // admin_menu.c
             cardNumber = hexToUint(cardNumberInput);
             free(cardNumberInput);
             break;
         } else if (choice == 3) {
-            printf("Exiting...\n");
+            printAdminMenu();
             return;
         } else {
             printf("Invalid choice! Try Again! \n");
@@ -90,11 +84,9 @@ void addRemoveAccess(accessCard *pAccessCards, size_t *pCardsMallocated, size_t 
     if (!found) {
         // Ask to add new card
         while (true) {
-            int choice;
-            printf("Card with RFID '%s' not found. Do you want to add a new card?\n", uintToHex(*pCardRead));
-            printf("1. Yes\n");
-            printf("2. No (back)\n");
-            GetInputInt("Enter choice: ", &choice);
+            char *cardNumberString = uintToHex(cardNumber);
+            int choice = addNewCardSubMenu(cardNumberString); // admin_menu.c
+            free(cardNumberString); // Free the allocated memory
 
             if (choice == 1) {
                 // If the card is not found, the `left` variable now points to the position where the card should be inserted.
@@ -104,9 +96,7 @@ void addRemoveAccess(accessCard *pAccessCards, size_t *pCardsMallocated, size_t 
                 break;
             }
         }
-
     }
-    
 }
 
 void addNewCard(accessCard **pAccessCards, size_t *pCardsMallocated, size_t *pCardCount, int cardIndex, unsigned int cardNumber) {
@@ -140,12 +130,7 @@ void addNewCard(accessCard **pAccessCards, size_t *pCardsMallocated, size_t *pCa
 }
 
 void updateCard(accessCard *pAccessCards, size_t *pCardCount, size_t cardIndex) {
-    printf("1. Change access\n");
-    printf("2. Remove card\n");
-    printf("3. Exit\n");
-
-    int choice;
-    GetInputInt("Enter your choice (enter 0 to show options): ", &choice);
+    int choice = updateCardSubMenu(); // admin_menu.c
 
     switch (choice) {
         case 1:
@@ -155,7 +140,7 @@ void updateCard(accessCard *pAccessCards, size_t *pCardCount, size_t cardIndex) 
             removeCard(&pAccessCards, pCardCount, cardIndex);
             break;
         case 3:
-            printf("Exiting...\n");
+            printAdminMenu();
             break;
         default:
             printf("Invalid choice! Try Again! \n");
@@ -200,4 +185,46 @@ void removeCard(accessCard **pAccessCards, size_t *pCardCount, size_t cardIndex)
         return;
     }
     *pAccessCards = temp;
+}
+
+bool isValidRFIDFormat(char *rfid) {
+    int len = strlen(rfid);
+
+    // Check total length for both formats
+    if (len != 11 && len != 8) {
+        return false;
+    }
+
+    // Check and format the 'XXXXXXXX' format
+    if (len == 8) {
+        for (int i = 0; i < len; i++) {
+            if (!isxdigit(rfid[i])) {
+                return false;
+            }
+        }
+        // Reformat to 'XX XX XX XX' by moving characters and inserting spaces
+        for (int i = len - 1; i >= 0; i--) {
+            int targetIndex = i + (i / 2); // Calculate the target index considering the spaces
+            rfid[targetIndex] = rfid[i];
+            if (i % 2 == 0 && i != 0) {
+                rfid[targetIndex - 1] = ' '; // Insert space
+            }
+        }
+        rfid[11] = '\0'; // Null-terminate the string
+        return true;
+    }
+
+    // Check the 'XX XX XX XX' format
+    if (len == 11) {
+        for (int i = 0; i < len; i++) {
+            if ((i == 2 || i == 5 || i == 8) && rfid[i] != ' ') {
+                return false;
+            } else if (i != 2 && i != 5 && i != 8 && !isxdigit(rfid[i])) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    return false;
 }

@@ -61,23 +61,23 @@ int main(void) {
     }
 
     // Establish TCP/IP connection to door controller - connect_wifi.c
-    while (sock == -1) {
-        int connected = establishConnection(pConfig->door_ip_address);
-        if (connected != -1) {
-            printf("\033[32m* Connected to wireless door controller (ESP8266EX MCU) with return code %d and established TCP/IP socket: %d\033[0m\n", connected, sock);
-            break;
-        } else {
-            printf("\033[31m* Failed to connect to door controller. Retrying...\033[0m\n");
-        }
-        portableSleep(500); // Wait for 1 second before trying again
-    }
+    // while (sock == -1) {
+    //     int connected = establishConnection(pConfig->door_ip_address);
+    //     if (connected != -1) {
+    //         printf("\033[32m* Connected to wireless door controller (ESP8266EX MCU) with return code %d and established TCP/IP socket: %d\033[0m\n", connected, sock);
+    //         break;
+    //     } else {
+    //         printf("\033[31m* Failed to connect to door controller. Retrying...\033[0m\n");
+    //     }
+    //     portableSleep(500); // Wait for 1 second before trying again
+    // }
 
     // Start multithreading - 1. MCU Card reader, 2. Admin console UI
     ThreadArgs args = {pCardsMallocated, pCardCount, pAccessCards, pConfig, pCardRead, true};
     startThreads(&args);
 
     // close TCP/IP connection to door controller
-    closeConnection();
+    // closeConnection();
 
     // Clean up memory
     free(pAccessCards);  // Free memory allocated by retrieveAccessCards() in data_storage.c
@@ -110,7 +110,9 @@ void startThreads(ThreadArgs *args) {
 void *runCardReader(void *args) {
     ThreadArgs *actualArgs = (ThreadArgs *)args;
 
+    // Connect to the RFID reader on the serial port
     int serial_port = open(actualArgs->pConfig->rfid_serial_port, O_RDWR);
+    
     if (serial_port == -1) {
         printf("\033[31m* Could not connect to RFID reader on serial port '%s' \033[0m\033[33m(Check serial port settings in admin menu!)\033[0m\n", actualArgs->pConfig->rfid_serial_port);
         // printf("\033[31mCard RFID reader NOT running!\033[0m\n");

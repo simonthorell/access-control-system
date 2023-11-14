@@ -12,8 +12,22 @@ enum menuChoice {
     FAKE_TEST_SCAN_CARD = 9
 };
 
+// user inputs
+int getMenuChoice(int menuOptions[], size_t menuOptionsSize);
+int getCardNumber(char* cardNumberInput, int cardIdLength);
+
+// admin main menu
+void printAdminMenu(void);
 int adminMenu(accessCard *pAccessCards, size_t *pCardsMallocated, size_t *pCardCount, unsigned int *pCardRead);
-void printMenuOptions(void);
-int getMenuChoice(void);
+
+// card management submenus
+void printScanCardSubMenu(void);
+int ScanCardSubMenu(void);
+
+void printAddNewCardSubMenu(char *uintToHex);
+int addNewCardSubMenu(char *uintToHex);
+
+void printUpdateCardSubMenu(void);
+int updateCardSubMenu(void);
 
 #endif
