@@ -9,9 +9,10 @@
 #include "safeinput.h"
 #include "data_storage.h"
 #include "card_reader.h"
+#include "input_output.h"       // print, get user input
 
 void listAllCards(accessCard *pAccessCards, size_t *pCardCount) {
-    printf("\n\033[1;90m************************ REGISTERED ACCESS CARDS ************************\033[0m\n");
+    printMenuHeader("REGISTERED ACCESS CARDS", 73); // input_output.c
 
     for (size_t i = 0; i < *pCardCount; i++) {
         char buffer[20]; // Buffer to hold the formatted date.
@@ -22,22 +23,24 @@ void listAllCards(accessCard *pAccessCards, size_t *pCardCount) {
         char *cardNumberString = malloc(sizeof(char) * CARD_ID_LENGTH); // 8 chars + 3 spaces + \0 = 12 chars
         cardNumberString = uintToHex(pAccessCards[i].cardNumber); // card_reader.c
 
-        printf("Card ID: %s\tStatus: %-10s\tUpdated: %s\n",
+        printf("Card ID: \033[33m%s\033[0m\tStatus: %-10s\tUpdated: %s\n",
             cardNumberString,
-            pAccessCards[i].cardAccess == ACCESS ? "ACCESS" : "NO ACCESS",
+            pAccessCards[i].cardAccess == ACCESS ? "\033[32mACCESS\033[0m  " : "\033[31mNO ACCESS\033[0m",
             buffer); // Print the formatted date.
 
         free(cardNumberString);
     }
-    printf("\033[1;90m*************************************************************************\033[0m\n");
+    printMenuFooter(73); // input_output.c
 }
 
 // Add or remove access for individual RFID cards
 void addRemoveAccess(accessCard *pAccessCards, size_t *pCardsMallocated, size_t *pCardCount, unsigned int *pCardRead) {
     unsigned int cardNumber;
-    int choice = ScanCardSubMenu(); // admin_menu.c
-   
+
+   // TODO: Move to admin_menu.c
     while (true) {
+        int choice = scanCardSubMenu(); // admin_menu.c
+
         if (choice == 1) {
             printf("Scan RFID card...\n");
             while (*pCardRead == 0) {
@@ -47,12 +50,18 @@ void addRemoveAccess(accessCard *pAccessCards, size_t *pCardsMallocated, size_t 
             break;
         } else if (choice == 2) {
             char *cardNumberInput = malloc(sizeof(char) * CARD_ID_LENGTH); // 8 chars + 3 spaces + \0 = 12 chars => CHANGE TO GLOBAL VARIABLE?
-            getCardNumber(cardNumberInput, CARD_ID_LENGTH); // admin_menu.c
+            int cardEntered = getCardNumber(cardNumberInput, CARD_ID_LENGTH); // admin_menu.c
+
+            if (cardEntered == 0) {
+                free(cardNumberInput);
+                continue;
+            }
+
             cardNumber = hexToUint(cardNumberInput);
             free(cardNumberInput);
             break;
         } else if (choice == 3) {
-            printAdminMenu();
+            // printAdminMenu(); - REMOVE
             return;
         } else {
             printf("Invalid choice! Try Again! \n");
@@ -69,8 +78,8 @@ void addRemoveAccess(accessCard *pAccessCards, size_t *pCardsMallocated, size_t 
         middle = left + (right - left) / 2; // To prevent potential overflow
         if (pAccessCards[middle].cardNumber == cardNumber) {
             const char *accessStrings[] = {"NO ACCESS", "ACCESS"};
-            printf("Card with RFID '%s' found with current access status: %s\n", uintToHex(*pCardRead), accessStrings[pAccessCards[middle].cardAccess]);
-            updateCard(pAccessCards, pCardCount, middle);
+            printf("Card with RFID '%s' found with current access status: %s\n", uintToHex(cardNumber), accessStrings[pAccessCards[middle].cardAccess]);
+            updateCardSubMenu(pAccessCards, pCardCount, middle);
             found = true;
             break;
         } else if (cardNumber < pAccessCards[middle].cardNumber) {
@@ -85,7 +94,8 @@ void addRemoveAccess(accessCard *pAccessCards, size_t *pCardsMallocated, size_t 
         // Ask to add new card
         while (true) {
             char *cardNumberString = uintToHex(cardNumber);
-            int choice = addNewCardSubMenu(cardNumberString); // admin_menu.c
+            printf("Card with RFID '%s' not found. Do you want to add a new card?\n", cardNumberString);
+            int choice = addNewCardSubMenu(); // admin_menu.c
             free(cardNumberString); // Free the allocated memory
 
             if (choice == 1) {
@@ -127,25 +137,6 @@ void addNewCard(accessCard **pAccessCards, size_t *pCardsMallocated, size_t *pCa
     (*pAccessCards)[cardIndex].cardNumber = cardNumber;
     setCardAccess(*pAccessCards, cardIndex);
     printf("New card with ID '%s' has been registered.\n", uintToHex(cardNumber));
-}
-
-void updateCard(accessCard *pAccessCards, size_t *pCardCount, size_t cardIndex) {
-    int choice = updateCardSubMenu(); // admin_menu.c
-
-    switch (choice) {
-        case 1:
-            setCardAccess(pAccessCards, cardIndex);
-            break;
-        case 2:
-            removeCard(&pAccessCards, pCardCount, cardIndex);
-            break;
-        case 3:
-            printAdminMenu();
-            break;
-        default:
-            printf("Invalid choice! Try Again! \n");
-            break;
-    }
 }
 
 void setCardAccess(accessCard *pAccessCards, size_t cardIndex) {
