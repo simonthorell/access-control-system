@@ -23,9 +23,10 @@ int systemMenu(accessCard *pAccessCards, size_t *pCardsMallocated, size_t *pCard
         {2, "Shutdown System"}
     };
     size_t optionsSize = sizeof(options) / sizeof(options[0]);
-    printMenu(headerTitle, headerLength, options, optionsSize); // input_output.c
-
+    
     while (1) {
+        printMenu(headerTitle, headerLength, options, optionsSize); // input_output.c
+
         int choice = getMenuChoice(options, optionsSize);
         switch (choice) {
             case 0:
@@ -54,9 +55,9 @@ void adminMenu(accessCard *pAccessCards, size_t *pCardsMallocated, size_t *pCard
         {9, "Test scan fake card"}
     };
     size_t optionsSize = sizeof(options) / sizeof(options[0]);
-    printMenu(headerTitle, headerLength, options, optionsSize); // input_output.c
 
     while (1) {
+        printMenu(headerTitle, headerLength, options, optionsSize); // input_output.c
         int choice = getMenuChoice(options, optionsSize);
         switch (choice) {
             case 0:

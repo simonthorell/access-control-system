@@ -10,7 +10,7 @@ int getMenuChoice(MenuOption *options, size_t menuOptionsSize){
     while (1) {
         int choice;
         // Validate that GetInputInt returns true and that the choice is in the menuOptions array
-        if (GetInputInt("\n\033[1;36mEnter command (0 = options) >>\033[0m ", &choice)) {
+        if (GetInputInt("\n\033[1;36mEnter command >>\033[0m ", &choice)) {
             if (choice == 0) {
                 return choice; // Return 0 to show menu options again
                 break;
@@ -30,28 +30,28 @@ int getMenuChoice(MenuOption *options, size_t menuOptionsSize){
 int getPassword(char* password, int passwordMaxLength){
     while (1) {
         char passwordInput[passwordMaxLength];
-        GetInput("\n\033[1;36mEnter password (0 = escape) >>\033[0m ", passwordInput, passwordMaxLength);
+        GetInput("\n\033[1;36mEnter password (0 = exit) >>\033[0m ", passwordInput, passwordMaxLength);
 
         if (passwordInput[0] == '0') {
             return 0; // exit and return to menu
         } else if (strcmp(passwordInput, password) == 0) {
-            printf("Password accepted! \n");
+            printf("\033[32m* Password accepted!\033[0m\n");
             return 1; // return success!
         } else {
-            printf("Invalid password format! Try Again! \n");
+            printf("\033[31m* Invalid password format! Try Again!\033[0m\n");
         }
     }
 }
 
 int getCardNumber(char* cardNumberInput, int cardIdLength){
     while (1) {
-        GetInput("\n\033[1;36mEnter card RFID (0 = escape) >>\033[0m ", cardNumberInput, cardIdLength);
+        GetInput("\n\033[1;36mEnter card RFID (0 = exit) >>\033[0m ", cardNumberInput, cardIdLength);
         if (cardNumberInput[0] == '0') {
             return 0;
         } else if (isValidRFIDFormat(cardNumberInput)) {
             return 1;
         } else {
-            printf("Invalid RFID format! Try Again! \n");
+            printf("\033[31m * Invalid RFID format! Try Again!\033[0m\n");
         }
     }
 }

@@ -10,35 +10,43 @@ int doorStatus = DOOR_LOCKED;
 void remoteOpenDoor(void) {
     printf("Remote unlocking door...\n");
     lockUnlockMechanism(DOOR_UNLOCKED);
-    (printf("Door unlocked!\n"));
 }
 
 // Sends signal to MCU to unlock the door
 void lockUnlockMechanism(int doorLock) {
     int result;
-
     switch (doorLock) {
         case DOOR_UNLOCKED:
             // Code to send signal to MCU to unlock door => GREEN LED
-            result = wifiWrite("DOOR_UNLOCKED"); // connect_wifi.c
-            if (result == 0) {
+            if (sock != -1) {
+                result = wifiWrite("DOOR_UNLOCKED"); // connect_wifi.c
+                if (result == 0) {
+                    doorStatus = DOOR_UNLOCKED;
+                    printf("Door unlocked!\n");
+                }
+            } else {
+                printf("CURRENTLY LAMP IS: \033[1;32mGreen\033[0m \033[3;36m\t(simulation mode)\033[0m\n");
+                portableSleep(3000); // Wait for 3 seconds to simulate door lock/unlock
                 doorStatus = DOOR_UNLOCKED;
             }
-            // Code for testing only
-            // printf("CURRENTLY LAMP IS: Green\n");
             portableSleep(100); // Wait to time LED on door controller (otherwise not queing up correct on MCU).
             lockUnlockMechanism(DOOR_LOCKED);
             break;
         case DOOR_LOCKED:
             // Code to send signal to MCU to lock door => RED LED
-            result = wifiWrite("DOOR_LOCKED"); // connect_wifi.c
-            if (result == 0) {
+            if (sock != -1) {
+                result = wifiWrite("DOOR_LOCKED"); // connect_wifi.c
+                if (result == 0) {
+                    doorStatus = DOOR_LOCKED;
+                    printf("Door locked!\n");
+                }
+            } else {
+                printf("CURRENTLY LAMP IS: \033[1;31mRed\033[0m \033[3;36m\t\t(simulation mode)\033[0m\n");
                 doorStatus = DOOR_LOCKED;
+                portableSleep(3000); // Wait for 3 seconds to simulate door lock/unlock
+                printf("CURRENTLY LAMP IS: \033[1;90mOff\033[0m \033[3;36m\t\t(simulation mode)\033[0m\n");
+                
             }
-            // Code for testing only
-            // printf("CURRENTLY LAMP IS: Red\n");
-            // portableSleep(3);
-            // printf("CURRENTLY LAMP IS: Off\n");
             break;
     }
 }

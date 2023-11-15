@@ -12,14 +12,15 @@
 #include "data_storage.h"    // Retrieve access cards from file & save to file (.csv)
 #include "util_sleep.h"      // portableSleep (Windos/Linux/Mac compatible sleep function)
 #include "connect_tcp_ip.h"  // Connect to door controller MCU wireless via TCP/IP
+#include "connect_serial.h"  // Connect to RFID reader MCU via serial port
 
 typedef struct {
     size_t *pCardsMallocated;
     size_t *pCardCount;
     accessCard *pAccessCards;
-    Configuration *pConfig;     // Pointer to Configuration struct
-    unsigned int *pCardRead;    // Last read card number from MCU RFID card reader
-    volatile bool keepRunning;  // TODO: Change to atomic bool
+    Configuration *pConfig;             // Pointer to Configuration struct
+    unsigned int *pCardRead;            // Last read card number from MCU RFID card reader
+    volatile bool runCardReaderThread;  // TODO: Change to atomic bool
 } ThreadArgs;
 
 void startThreads(ThreadArgs *args); // Start multithreading with 2 threads.
@@ -55,23 +56,14 @@ int main(void) {
         args.pConfig = pConfig;         // Set the config pointer in ThreadArgs
     }
 
-    // Establish TCP/IP connection to door controller - connect_wifi.c
-    while (sock == -1) {
-        int connected = establishConnection(pConfig->door_ip_address);
-        if (connected != -1) {
-            printf("\033[32m* Connected to wireless door controller (ESP8266EX MCU) with return code %d and established TCP/IP socket: %d\033[0m\n", connected, sock);
-            break;
-        } else {
-            printf("\033[31m* Failed to connect to door controller. Retrying...\033[0m\n");
-        }
-        portableSleep(500); // Wait for 1 second before trying again
-    }
+    // Connect to the ESP8266 MCU on the door controller via TCP/IP
+    tcpConnect(pConfig->door_ip_address); 
 
     // Start multithreading - 1. MCU Card reader, 2. Admin console UI
     ThreadArgs args = {pCardsMallocated, pCardCount, pAccessCards, pConfig, pCardRead, true};
     startThreads(&args);
 
-    // close TCP/IP connection to door controller
+    // close TCP/IP connection
     closeConnection();
 
     // Clean up memory
@@ -104,29 +96,23 @@ void startThreads(ThreadArgs *args) {
 
 void *runCardReader(void *args) {
     ThreadArgs *actualArgs = (ThreadArgs *)args;
-    // pthread_mutex_lock(&actualArgs->mutex);
-
     // Connect to the RFID reader on the serial port
-    int serial_port = open(actualArgs->pConfig->rfid_serial_port, O_RDWR);
-    
+    int serial_port = serialConnect(actualArgs->pConfig->rfid_serial_port); // card_reader.c
+
+    // If the serial port could not be opened, exit the thread
     if (serial_port == -1) {
-        printf("\033[31m* Could not connect to RFID reader on serial port '%s' \033[0m\033[33m(Check serial port settings in admin menu!)\033[0m\n", actualArgs->pConfig->rfid_serial_port);
+        actualArgs->runCardReaderThread = false;
         return NULL;
-    } else {
-        printf("\033[32m* Connected to RFID reader on serial port %s\033[0m\n", actualArgs->pConfig->rfid_serial_port);
     }
 
     // Run the MCU card reader until the admin console shuts down the system.
-    while (actualArgs->keepRunning) {
+    while (actualArgs->runCardReaderThread) {
         *actualArgs->pCardRead = rfidReading(actualArgs->pAccessCards, actualArgs->pCardCount, serial_port); // card_reader.c
-        // TODO: Move this to function reading the card
-        portableSleep(500); // Sleep for a short duration to prevent this loop from consuming too much CPU.
+        portableSleep(1000); // Sleep for a short duration to prevent this loop from consuming too much CPU.
         *actualArgs->pCardRead = 0; // Reset cardRead to 0 after reading card
     }
 
-    close(serial_port); // Remember to close the port
-
-    printf("* Terminating card reader...\n");
+    serialDisconnect(serial_port); // Close the serial port connection
     return NULL; // No need to return a value, NULL is used when the return value is not used
 }
 
@@ -137,9 +123,10 @@ void *runAdminConsol(void *args) {
     int menu = systemMenu(actualArgs->pAccessCards, actualArgs->pCardsMallocated, actualArgs->pCardCount, actualArgs->pCardRead); // admin_menu.c
 
     if (menu == 0) {
-        printf("* Shutting down DOOR ACCESS CONTROL SYSTEM...\n");
+        actualArgs->runCardReaderThread = false;
+        printf("* Shutting down system...\n");
     } else {
-        printf("* Terminating admin console...\n");
+        printf("\033[31m* System did not shut down correctly!\033[0m\n");
     }
 
     return NULL; // Return a null pointer since no value needs to be returned

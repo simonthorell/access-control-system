@@ -11,6 +11,7 @@
 // Declaration of global socket descriptor
 extern int sock;
 
+int tcpConnect(char *ipAddress);
 int establishConnection(const char* ipAddress);
 int wifiWrite(const char *command);
 void closeConnection(void);

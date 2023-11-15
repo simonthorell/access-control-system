@@ -10,6 +10,7 @@
 #include "data_storage.h"
 #include "card_reader.h"
 #include "input_output.h"       // print, get user input
+#include "util_sleep.h"         // portableSleep
 
 void listAllCards(accessCard *pAccessCards, size_t *pCardCount) {
     printMenuHeader("REGISTERED ACCESS CARDS", 73); // input_output.c
@@ -44,7 +45,8 @@ void addRemoveAccess(accessCard *pAccessCards, size_t *pCardsMallocated, size_t 
         if (choice == 1) {
             printf("Scan RFID card...\n");
             while (*pCardRead == 0) {
-                // TODO: Add timeout - Wait for card to be read by MCU RFID card reader
+                // Wait for access card to be read on RFID reader
+                portableSleep(300); // Sleep to not consume too much CPU
             }
             cardNumber = *pCardRead;
             break;
@@ -58,14 +60,10 @@ void addRemoveAccess(accessCard *pAccessCards, size_t *pCardsMallocated, size_t 
             }
 
             cardNumber = hexToUint(cardNumberInput);
-            printf("Card ID entered: %s\n", cardNumberInput);
             free(cardNumberInput);
             break;
         } else if (choice == 3) {
-            // printAdminMenu(); - REMOVE
             return;
-        } else {
-            printf("Invalid choice! Try Again! \n");
         }
     }
 
