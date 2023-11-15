@@ -58,6 +58,7 @@ void addRemoveAccess(accessCard *pAccessCards, size_t *pCardsMallocated, size_t 
             }
 
             cardNumber = hexToUint(cardNumberInput);
+            printf("Card ID entered: %s\n", cardNumberInput);
             free(cardNumberInput);
             break;
         } else if (choice == 3) {

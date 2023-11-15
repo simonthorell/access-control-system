@@ -8,6 +8,10 @@ typedef struct {
     const char *value;
 } MenuOption;
 
+// TODO: move
+int promptAdminPassword(void);
+
+int systemMenu(accessCard *pAccessCards, size_t *pCardsMallocated, size_t *pCardCount, unsigned int *pCardRead);
 void adminMenu(accessCard *pAccessCards, size_t *pCardsMallocated, size_t *pCardCount, unsigned int *pCardRead);
 int scanCardSubMenu(void);
 int addNewCardSubMenu(void);

@@ -4,8 +4,8 @@
 #include <stdlib.h>          // free (memory deallocation)
 #include <pthread.h>         // Threads
 #include <fcntl.h>           // open (serial port)
+#include <unistd.h>          // close (serial port)
 
-#include "safeinput.h"       // GetInputInt, GetInput
 #include "admin_menu.h"      // Admin console UI menu
 #include "card_reader.h"     // RFID card reader functions (RFID MCU connected via serial port)
 #include "card_management.h" // Struct for access cards
@@ -21,11 +21,6 @@ typedef struct {
     unsigned int *pCardRead;    // Last read card number from MCU RFID card reader
     volatile bool keepRunning;  // TODO: Change to atomic bool
 } ThreadArgs;
-
-enum choice{
-    ADMIN_MENU = 1,
-    SHUTDOWN_SYSTEM = 2
-};
 
 void startThreads(ThreadArgs *args); // Start multithreading with 2 threads.
 void *runCardReader(void *args);     // Thread 1: MCU Card reader (Arduino/ESP32)
@@ -109,22 +104,22 @@ void startThreads(ThreadArgs *args) {
 
 void *runCardReader(void *args) {
     ThreadArgs *actualArgs = (ThreadArgs *)args;
+    // pthread_mutex_lock(&actualArgs->mutex);
 
     // Connect to the RFID reader on the serial port
     int serial_port = open(actualArgs->pConfig->rfid_serial_port, O_RDWR);
     
     if (serial_port == -1) {
         printf("\033[31m* Could not connect to RFID reader on serial port '%s' \033[0m\033[33m(Check serial port settings in admin menu!)\033[0m\n", actualArgs->pConfig->rfid_serial_port);
-        // printf("\033[31mCard RFID reader NOT running!\033[0m\n");
         return NULL;
     } else {
         printf("\033[32m* Connected to RFID reader on serial port %s\033[0m\n", actualArgs->pConfig->rfid_serial_port);
-        // printf("\033[32m*** Card RFID reader running!*** \n");
     }
 
     // Run the MCU card reader until the admin console shuts down the system.
     while (actualArgs->keepRunning) {
         *actualArgs->pCardRead = rfidReading(actualArgs->pAccessCards, actualArgs->pCardCount, serial_port); // card_reader.c
+        // TODO: Move this to function reading the card
         portableSleep(500); // Sleep for a short duration to prevent this loop from consuming too much CPU.
         *actualArgs->pCardRead = 0; // Reset cardRead to 0 after reading card
     }
@@ -137,51 +132,15 @@ void *runCardReader(void *args) {
 
 void *runAdminConsol(void *args) {
     ThreadArgs *actualArgs = (ThreadArgs *)args;
-    // printf("*** Admin console running! ***\n");
 
-    // TODO: Create encrypt/decrypt functions and store password hash in file. 
-    char adminPw[6] = "admin";  
-    
-    portableSleep(1000); // TODO: Temporary fix to wait for card reader to start up. Replace with mutex.
+    portableSleep(500); // TODO: Temporary fix to wait for card reader to start up. Replace with mutex.
+    int menu = systemMenu(actualArgs->pAccessCards, actualArgs->pCardsMallocated, actualArgs->pCardCount, actualArgs->pCardRead); // admin_menu.c
 
-    int choice = 1;
-    do {
-        printf("\n\033[1;90m*** SYSTEM MENU ***\033[0m\n");
-        printf("1. Admin menu\n");
-        printf("2. Shutdown system\n");
-        printf("\033[1;90m******************\033[0m\n\n");
-        GetInputInt("\033[4mEnter your option:\033[0m ", &choice);
-        char inputPw[21];
-
-        switch (choice) {
-            case ADMIN_MENU:
-                GetInput("\033[4mEnter password:\033[0m ", inputPw, 20);
-                if (strcmp(adminPw, inputPw) == 0) {
-                    adminMenu(actualArgs->pAccessCards, actualArgs->pCardsMallocated, actualArgs->pCardCount, actualArgs->pCardRead); // admin_menu.c
-                } else {
-                    printf("Invalid password!\n");
-                }
-                break;
-            case SHUTDOWN_SYSTEM:
-                // Save the cards and determine whether to shut down
-                if (!saveAccessCards(actualArgs->pAccessCards, *(actualArgs->pCardCount))) {
-                    printf("Cards saved successfully.\nShutting down Door Access Control System...\n");
-                } else {
-                    GetInputInt("Error saving cards. Enter 0 to shutdown system without saving or 1 to cancel: ", &choice);
-                    if (!choice) {
-                        printf("Shutting down DOOR ACCESS CONTROL SYSTEM without saving...\n");
-                    } else {
-                        printf("System will not shutdown. Returning to main menu...\n");
-                        continue;
-                    }
-                }
-                actualArgs->keepRunning = false;  // Terminate card reader
-                break;    
-            default:
-                printf("Invalid choice! Try again!\n");
-                break;
-        }
-    } while (choice != SHUTDOWN_SYSTEM);
+    if (menu == 0) {
+        printf("* Shutting down DOOR ACCESS CONTROL SYSTEM...\n");
+    } else {
+        printf("* Terminating admin console...\n");
+    }
 
     return NULL; // Return a null pointer since no value needs to be returned
 }
