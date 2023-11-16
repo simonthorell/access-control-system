@@ -11,8 +11,8 @@ typedef struct {
 // TODO: move
 int promptAdminPassword(void);
 
-int systemMenu(accessCard *pAccessCards, size_t *pCardsMallocated, size_t *pCardCount, unsigned int *pCardRead);
-void adminMenu(accessCard *pAccessCards, size_t *pCardsMallocated, size_t *pCardCount, unsigned int *pCardRead);
+int systemMenu(accessCard *pAccessCards, size_t *pCardsMallocated, size_t *pCardCount, unsigned long int *pCardRead);
+void adminMenu(accessCard *pAccessCards, size_t *pCardsMallocated, size_t *pCardCount, unsigned long int *pCardRead);
 int scanCardSubMenu(void);
 int addNewCardSubMenu(void);
 void updateCardSubMenu(accessCard *pAccessCards, size_t *pCardCount, size_t cardIndex);

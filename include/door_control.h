@@ -6,6 +6,9 @@ enum doorLock {
     DOOR_UNLOCKED = 1
 };
 
+// Global int for whole system to check if door is currently locked/unlocked
+extern int doorStatus;
+
 void remoteOpenDoor(void);
 void lockUnlockMechanism(int lock);
 

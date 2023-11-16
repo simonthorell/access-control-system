@@ -36,7 +36,7 @@ void listAllCards(accessCard *pAccessCards, size_t *pCardCount) {
 
 // Add or remove access for individual RFID cards
 void addRemoveAccess(accessCard *pAccessCards, size_t *pCardsMallocated, size_t *pCardCount, unsigned int *pCardRead) {
-    unsigned int cardNumber;
+    unsigned long int cardNumber;
 
    // TODO: Move to admin_menu.c
     while (true) {
@@ -108,7 +108,7 @@ void addRemoveAccess(accessCard *pAccessCards, size_t *pCardsMallocated, size_t 
     }
 }
 
-void addNewCard(accessCard **pAccessCards, size_t *pCardsMallocated, size_t *pCardCount, int cardIndex, unsigned int cardNumber) {
+void addNewCard(accessCard **pAccessCards, size_t *pCardsMallocated, size_t *pCardCount, int cardIndex, unsigned long int cardNumber) {
     // Check if there is space for card within current memory allocation, if not - double allocation. 
     if (*pCardCount >= *pCardsMallocated) {
         // Attempt to double the amount of allocated memory

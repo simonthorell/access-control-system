@@ -19,7 +19,7 @@ typedef struct {
     size_t *pCardCount;
     accessCard *pAccessCards;
     Configuration *pConfig;             // Pointer to Configuration struct
-    unsigned int *pCardRead;            // Last read card number from MCU RFID card reader
+    unsigned long int *pCardRead;            // Last read card number from MCU RFID card reader
     volatile bool runCardReaderThread;  // TODO: Change to atomic bool
 } ThreadArgs;
 
@@ -37,8 +37,8 @@ int main(void) {
     size_t *pCardCount = &cardCount; 
     accessCard *pAccessCards = retrieveAccessCards(&cardsMallocated, &cardCount); // Do not forget to free memory
 
-    unsigned int cardRead = 0;           // Card number read by MCU RFID card reader
-    unsigned int *pCardRead = &cardRead; // Pointer to last card read by MCU RFID card reader.
+    unsigned long int cardRead = 0;           // Card number read by MCU RFID card reader
+    unsigned long int *pCardRead = &cardRead; // Pointer to last card read by MCU RFID card reader.
 
     // Check if access cards were loaded successfully from file to heap.
     if (pAccessCards == NULL) {

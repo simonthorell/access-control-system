@@ -3,13 +3,17 @@
 #include "util_sleep.h"
 #include "connect_tcp_ip.h" // Connect to Wemos D1 Mini controlling door lock
 
-// Define a variable to track the current door status
+// Set initial value of global variable to door locked.
 int doorStatus = DOOR_LOCKED;
 
 // Open door from admin menu
 void remoteOpenDoor(void) {
     printf("Remote unlocking door...\n");
     lockUnlockMechanism(DOOR_UNLOCKED);
+    // Confirm that MCU door controller executed command (will only run if NOT in simulation mode).
+    if (sock != -1) {
+        printf("Door successfully unlocked!\n");
+    }
 }
 
 // Sends signal to MCU to unlock the door
@@ -22,7 +26,7 @@ void lockUnlockMechanism(int doorLock) {
                 result = wifiWrite("DOOR_UNLOCKED"); // connect_wifi.c
                 if (result == 0) {
                     doorStatus = DOOR_UNLOCKED;
-                    printf("Door unlocked!\n");
+                    // printf("Door unlocked!\n");
                 }
             } else {
                 printf("CURRENTLY LAMP IS: \033[1;32mGreen\033[0m \033[3;36m\t(simulation mode)\033[0m\n");
@@ -38,7 +42,7 @@ void lockUnlockMechanism(int doorLock) {
                 result = wifiWrite("DOOR_LOCKED"); // connect_wifi.c
                 if (result == 0) {
                     doorStatus = DOOR_LOCKED;
-                    printf("Door locked!\n");
+                    // printf("Door locked!\n");
                 }
             } else {
                 printf("CURRENTLY LAMP IS: \033[1;31mRed\033[0m \033[3;36m\t\t(simulation mode)\033[0m\n");

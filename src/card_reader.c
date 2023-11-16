@@ -24,23 +24,31 @@ void fakeTestScanCard(accessCard *pAccessCards, size_t *pCardCount) {
         return; // Return to admin menu
     }
 
-    int cardNumber = hexToUint(cardNumberInput); // Convert hex string to unsigned int
+    unsigned long int cardNumber = hexToUint(cardNumberInput); // Convert hex string to unsigned int
     int cardAuthenticated = cardAuthentication(pAccessCards, pCardCount, cardNumber);
 
     if (cardAuthenticated) {
         printf("Card authenticated! Access granted!\n");
         lockUnlockMechanism(DOOR_UNLOCKED);
+        // Validate that door controller MCU received and successfully executed locking mechanism. 
+        if (!doorStatus) {
+            printf("Door successfully unlocked!\n");
+        }
     } else {
         printf("Card authenticated! Access denied!\n");
         lockUnlockMechanism(DOOR_LOCKED);
+        // Validate that door controller MCU received and successfully executed locking mechanism. 
+        if (doorStatus) {
+            printf("Door currently locked!\n");
+        }
     }
 
     free(cardNumberInput);
 }
 
-unsigned int rfidReading(accessCard *pAccessCards, size_t *pCardCount, int serial_port) {
+unsigned long int rfidReading(accessCard *pAccessCards, size_t *pCardCount, int serial_port) {
     while (1) {
-        unsigned int cardNumber = 0; // REPLACE with card ID from MCU - FAKE by typing card 1000, 1002, 1003 f.e.
+        unsigned long int cardNumber = 0; // REPLACE with card ID from MCU - FAKE by typing card 1000, 1002, 1003 f.e.
         // Read from serial port
         char *line = serialRead(serial_port);
         if (line) {
@@ -62,7 +70,7 @@ unsigned int rfidReading(accessCard *pAccessCards, size_t *pCardCount, int seria
     }
 }
 
-int cardAuthentication(accessCard *pAccessCards, size_t *pCardCount, unsigned int cardNumber) {
+int cardAuthentication(accessCard *pAccessCards, size_t *pCardCount, unsigned long int cardNumber) {
     // Loop through all registered cards to validate RFID card against the authorized list
     for (size_t i = 0; i < *pCardCount; i++) {
         if (pAccessCards[i].cardNumber == cardNumber) {
@@ -78,10 +86,10 @@ int cardAuthentication(accessCard *pAccessCards, size_t *pCardCount, unsigned in
     return NO_ACCESS; // FALL BACK = NO ACCESS (0)
 }
 
-unsigned int hexToUint(char *hexString) {
+unsigned long int hexToUint(char *hexString) {
     // Convert hex string to unsigned int
 
-    unsigned int hexValue = 0;
+    unsigned long int hexValue = 0;
     for (size_t i = 0; i < strlen(hexString); i++) {
         if (hexString[i] == ' ') {
             continue;
@@ -100,15 +108,27 @@ unsigned int hexToUint(char *hexString) {
 }
 
 // Do not forget to free the allocated memory after use!
-char *uintToHex(unsigned int cardNumber) {
+char *uintToHex(unsigned long int cardNumber) {
+     char *cardNumberString = malloc(sizeof(char) * 24);
     // Convert unsigned int to char*
-    char *cardNumberString = malloc(sizeof(char) * 12); // 8 chars + 3 spaces + \0 = 12 chars
+    // char *cardNumberString = malloc(sizeof(char) * 12); // 8 chars + 3 spaces + \0 = 12 chars
     if (cardNumberString == NULL) {
         printf("Error allocating memory for cardNumberString\n");
         exit(EXIT_FAILURE);
     }
 
-    sprintf(cardNumberString, "%02X %02X %02X %02X", 
+    // sprintf(cardNumberString, "%02X %02X %02X %02X", 
+    //         (cardNumber >> 24) & 0xFF, 
+    //         (cardNumber >> 16) & 0xFF, 
+    //         (cardNumber >> 8) & 0xFF, 
+    //         cardNumber & 0xFF);
+
+    // Adjusted for 64-bit number
+    sprintf(cardNumberString, "%02lX %02lX %02lX %02lX %02lX %02lX %02lX %02lX", 
+            (cardNumber >> 56) & 0xFF, 
+            (cardNumber >> 48) & 0xFF, 
+            (cardNumber >> 40) & 0xFF, 
+            (cardNumber >> 32) & 0xFF, 
             (cardNumber >> 24) & 0xFF, 
             (cardNumber >> 16) & 0xFF, 
             (cardNumber >> 8) & 0xFF, 

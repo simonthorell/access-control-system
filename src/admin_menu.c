@@ -15,7 +15,7 @@ int promptAdminPassword(void){
     }
 }
 
-int systemMenu(accessCard *pAccessCards, size_t *pCardsMallocated, size_t *pCardCount, unsigned int *pCardRead) {
+int systemMenu(accessCard *pAccessCards, size_t *pCardsMallocated, size_t *pCardCount, unsigned long int *pCardRead) {
     char *headerTitle = "SYSTEM MENU";
     int headerLength = 28;
     MenuOption options[] = {
@@ -44,7 +44,7 @@ int systemMenu(accessCard *pAccessCards, size_t *pCardsMallocated, size_t *pCard
     return 1; // Program not shutdown correctly - pass error warning to main
 }
 
-void adminMenu(accessCard *pAccessCards, size_t *pCardsMallocated, size_t *pCardCount, unsigned int *pCardRead) {
+void adminMenu(accessCard *pAccessCards, size_t *pCardsMallocated, size_t *pCardCount, unsigned long int *pCardRead) {
     char *headerTitle = "ADMIN MENU";
     int headerLength = 28;
     MenuOption options[] = {

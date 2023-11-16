@@ -18,7 +18,7 @@ int saveAccessCards(accessCard *pAccessCards, size_t cardCount) {
         const char* statusStr = pAccessCards[i].cardAccess == ACCESS ? "ACCESS" : "NO_ACCESS";
         
         // Write the CSV line
-        if (fprintf(file, "%u,%s,%ld\n", 
+        if (fprintf(file, "%lu,%s,%ld\n", 
                     pAccessCards[i].cardNumber, 
                     statusStr, 
                     pAccessCards[i].dateCreated) < 0) {
@@ -56,11 +56,11 @@ accessCard* retrieveAccessCards(size_t *cardsMallocated, size_t *cardCount) {
 
         // Temp variables to store the parsed values
         char statusStr[20];
-        unsigned int cardNumber;
+        unsigned long int cardNumber;
         time_t dateCreated;
 
         // Read the CSV line and parse it
-        if (sscanf(line, "%d,%19[^,],%ld", &cardNumber, statusStr, &dateCreated) == 3) {
+        if (sscanf(line, "%lu,%19[^,],%ld", &cardNumber, statusStr, &dateCreated) == 3) {
             accessCards[*cardCount].cardNumber = cardNumber;
             accessCards[*cardCount].cardAccess = strcmp(statusStr, "ACCESS") == 0 ? ACCESS : NO_ACCESS;
             accessCards[*cardCount].dateCreated = dateCreated;
