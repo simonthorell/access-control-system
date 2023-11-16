@@ -43,6 +43,21 @@ int getPassword(char* password, int passwordMaxLength){
     }
 }
 
+int getNewPassword(char* newPassword, size_t passwordMaxLength){
+    while (1) {
+        GetInput("\n\033[1;36mEnter password (0 = exit) >>\033[0m ", newPassword, passwordMaxLength);
+
+        if (newPassword[0] == '0') {
+            return -1; // exit and return to menu
+        } else if (strlen(newPassword) >= 5 && strlen(newPassword) < passwordMaxLength) {
+            printf("\033[32m* New password accepted!\033[0m\n");
+            return 0; // return success!
+        } else {
+            printf("\033[31m* Invalid password format! Try Again with 5 to %zu characters!\033[0m\n", passwordMaxLength - 1);
+        }
+    }
+}
+
 int getCardNumber(char* cardNumberInput, int cardIdLength){
     while (1) {
         GetInput("\n\033[1;36mEnter card RFID (0 = exit) >>\033[0m ", cardNumberInput, cardIdLength);

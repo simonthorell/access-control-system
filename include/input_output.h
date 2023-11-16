@@ -6,6 +6,7 @@
 // User input
 int getMenuChoice(MenuOption *options, size_t menuOptionsSize);
 int getPassword(char* password, int passwordMaxLength);
+int getNewPassword(char* newPassword, size_t passwordMaxLength);
 int getCardNumber(char* cardNumberInput, int cardIdLength);
 
 // Print menu

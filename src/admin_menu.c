@@ -4,16 +4,7 @@
 #include "card_reader.h"        // fakeTestScanCard
 #include "admin_menu.h"         // MenuOptions struct
 
-int promptAdminPassword(void){
-    // TODO: Create encrypt/decrypt functions and store password hash in file. 
-    char *adminPw = "admin";
-    int passwordMaxLength = 21;
-    if (getPassword(adminPw, passwordMaxLength)) { // input_output.c
-        return 1; // true
-    } else {
-        return 0; // false
-    }
-}
+#include "encrypt_decrypt.h"   // encryptPassword, decryptPassword
 
 int systemMenu(accessCard *pAccessCards, size_t *pCardsMallocated, size_t *pCardCount, unsigned long int *pCardRead) {
     char *headerTitle = "SYSTEM MENU";
@@ -52,6 +43,7 @@ void adminMenu(accessCard *pAccessCards, size_t *pCardsMallocated, size_t *pCard
         {2, "List all cards in system"},
         {3, "Add/update/remove cards"},
         {4, "Exit admin menu"},
+        {8, "Change password"},
         {9, "Test scan fake card"}
     };
     size_t optionsSize = sizeof(options) / sizeof(options[0]);
@@ -74,6 +66,9 @@ void adminMenu(accessCard *pAccessCards, size_t *pCardsMallocated, size_t *pCard
                 break;
             case 4:
                 return; // Back to system menu
+            case 8:
+                changeAdminPassword();
+                break;
             case 9:
                 fakeTestScanCard(pAccessCards, pCardCount);
                 break;

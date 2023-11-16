@@ -12,7 +12,6 @@
 #include "data_storage.h"    // Retrieve access cards from file & save to file (.csv)
 #include "connect_tcp_ip.h"  // Connect to door controller MCU wireless via TCP/IP
 #include "connect_serial.h"  // Connect to RFID reader MCU via serial port
-
 #include "util_sleep.h"      // portableSleep - TEMPORARY FIX TO RESET CARD READER
 
 typedef struct {
@@ -20,13 +19,13 @@ typedef struct {
     size_t *pCardCount;
     accessCard *pAccessCards;
     Configuration *pConfig;             // Pointer to Configuration struct
-    unsigned long int *pCardRead;            // Last read card number from MCU RFID card reader
+    unsigned long int *pCardRead;       // Last read card number from MCU RFID card reader
     volatile bool runCardReaderThread;  // TODO: Change to atomic bool
 } ThreadArgs;
 
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
-bool isCardReaderReady = false; // This boolean represents the condition
+bool isCardReaderReady = false;
 
 void startThreads(ThreadArgs *args); // Start multithreading with 2 threads.
 void *runCardReader(void *args);     // Thread 1: MCU Card reader (Arduino/ESP32)
