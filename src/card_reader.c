@@ -105,28 +105,16 @@ unsigned long int hexToUint(char *hexString) {
     return hexValue;
 }
 
-// Do not forget to free the allocated memory after use!
+// Convert unsigned int to char* - Do not forget to free the allocated memory after use!
 char *uintToHex(unsigned long int cardNumber) {
-     char *cardNumberString = malloc(sizeof(char) * 24);
-    // Convert unsigned int to char*
-    // char *cardNumberString = malloc(sizeof(char) * 12); // 8 chars + 3 spaces + \0 = 12 chars
+    char *cardNumberString = malloc(sizeof(char) * 12); // 8 chars + 3 spaces + \0 = 12 chars // Only works for 32-bit unsigned long int (4 bytes)
+    // char *cardNumberString = malloc(sizeof(char) * 24); // Modified for 64-bit unsigned long int (8 bytes)
     if (cardNumberString == NULL) {
         printf("Error allocating memory for cardNumberString\n");
         exit(EXIT_FAILURE);
     }
 
-    // sprintf(cardNumberString, "%02X %02X %02X %02X", 
-    //         (cardNumber >> 24) & 0xFF, 
-    //         (cardNumber >> 16) & 0xFF, 
-    //         (cardNumber >> 8) & 0xFF, 
-    //         cardNumber & 0xFF);
-
-    // Adjusted for 64-bit number
-    sprintf(cardNumberString, "%02lX %02lX %02lX %02lX %02lX %02lX %02lX %02lX", 
-            (cardNumber >> 56) & 0xFF, 
-            (cardNumber >> 48) & 0xFF, 
-            (cardNumber >> 40) & 0xFF, 
-            (cardNumber >> 32) & 0xFF, 
+    sprintf(cardNumberString, "%02lX %02lX %02lX %02lX", 
             (cardNumber >> 24) & 0xFF, 
             (cardNumber >> 16) & 0xFF, 
             (cardNumber >> 8) & 0xFF, 
