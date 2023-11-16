@@ -3,6 +3,6 @@
 
 int serialConnect(char *port);
 void serialDisconnect(int serial_port);
-char* serialRead(int serial_port);
+char* serialRead(int serial_port, int timeout);
 
 #endif

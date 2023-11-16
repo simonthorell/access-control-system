@@ -25,7 +25,11 @@ void serialDisconnect(int serial_port) {
     close(serial_port);
 }
 
-char* serialRead(int serial_port) {
+char* serialRead(int serial_port, int timeout) {
+    // Set the serial port to non-blocking
+    int flags = fcntl(serial_port, F_GETFL, 0);
+    fcntl(serial_port, F_SETFL, flags | O_NONBLOCK);
+
     // Allocate memory for read buffer
     char *read_buf = (char *)malloc(256 * sizeof(char));
     if (!read_buf) {
@@ -34,18 +38,32 @@ char* serialRead(int serial_port) {
     }
     memset(read_buf, '\0', 256);
 
-    // Read from the serial port
-    int num_bytes = read(serial_port, read_buf, 255);
+    int num_bytes;
+    time_t start_time = time(NULL);
 
-    if (num_bytes < 0) {
-        printf("Error reading: %s\n", strerror(errno));
-        free(read_buf);
-        return NULL;
-    }
+    // Loop until data is read or timeout
+    while (1) {
+        num_bytes = read(serial_port, read_buf, 255);
 
-    if (num_bytes == 0) {
-        free(read_buf);
-        return NULL;
+        if (num_bytes > 0) {
+            // Data read
+            break;
+        } else if (num_bytes < 0 && errno != EAGAIN) {
+            // An error occurred
+            printf("Error reading: %s\n", strerror(errno));
+            free(read_buf);
+            return NULL;
+        }
+
+        // Check for timeout
+        if (time(NULL) - start_time > timeout) {
+            // printf("Read timeout.\n");
+            free(read_buf);
+            return NULL;
+        }
+
+        // Sleep for 1 second
+        sleep(1);
     }
 
     // Reallocate the buffer to the actual data size
@@ -57,6 +75,5 @@ char* serialRead(int serial_port) {
     }
 
     actual_data[num_bytes] = '\0'; // Null-terminate the string
-    // printf("Read %i bytes. Received message: %s\n", num_bytes, actual_data);
     return actual_data;
 }

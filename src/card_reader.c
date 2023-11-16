@@ -44,11 +44,11 @@ void fakeTestScanCard(accessCard *pAccessCards, size_t *pCardCount) {
     free(cardNumberInput);
 }
 
-unsigned long int rfidReading(accessCard *pAccessCards, size_t *pCardCount, int serial_port) {
-    while (1) {
+unsigned long int rfidReading(volatile bool *runCardReaderThread, accessCard *pAccessCards, size_t *pCardCount, int serial_port) {
+    while (*runCardReaderThread) {
         unsigned long int cardNumber = 0; // REPLACE with card ID from MCU - FAKE by typing card 1000, 1002, 1003 f.e.
         // Read from serial port
-        char *line = serialRead(serial_port); // This function waits for serialRead and then continues
+        char *line = serialRead(serial_port, 1); // This function waits for serialRead and then continues
         if (line) {
             cardNumber = hexToUint(line); // Convert hex string to unsigned int
             if (cardNumber != 0) {

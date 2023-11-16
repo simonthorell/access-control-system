@@ -132,10 +132,12 @@ void *runCardReader(void *args) {
         pthread_mutex_unlock(&mutex);
     }
     
+    volatile bool *runCardReaderThread = &actualArgs->runCardReaderThread;
+
     // Run the MCU card reader until the admin console request to shut down the system.
     while (actualArgs->runCardReaderThread) {
         // This will re-loop everytime a card has been read by the MCU RFID card reader.
-        *actualArgs->pCardRead = rfidReading(actualArgs->pAccessCards, actualArgs->pCardCount, serial_port); // card_reader.c
+        *actualArgs->pCardRead = rfidReading(runCardReaderThread, actualArgs->pAccessCards, actualArgs->pCardCount, serial_port); // card_reader.c
         // pCardRead is reset to 0 by the function consuming the card number (See addRemoveAccess() in 'card_management.c')
 
         // TEMP FIX TO RESET CARD
