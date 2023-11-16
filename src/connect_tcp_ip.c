@@ -80,6 +80,7 @@ int tcpConnect(char *ipAddress) {
 //     }
 
 //     close(sock);
+//     sock = -1;
 //     return -1;
 // }
 

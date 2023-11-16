@@ -5,8 +5,7 @@
 #include <time.h>
 
 int saveAccessCards(accessCard *pAccessCards, size_t cardCount) {
-    printf("Saving %zu access cards from memory location: %p to file 'access_cards.csv'...\n", cardCount, (void *)pAccessCards);
-
+    printf("\033[33m* Saving %zu access cards from memory location: %p to file 'access_cards.csv'...\033[0m\n", cardCount, (void *)pAccessCards);
     FILE *file = fopen("access_cards.csv", "w");
     if (!file) return -1; // Could not open file for writing.
 

@@ -5,11 +5,14 @@ The pins used for LED's are D1 and D2 which could instead be routed to a relay t
 
 #include <ESP8266WiFi.h>
 
-const char* ssid = "your_ssid";
-const char* password = "your_password";
+// when sending TCP/IP command, do not forget to end string with \r. 
+// EXAMPLE: result = wifiWrite("DOOR_UNLOCKED\r"); 
 
-IPAddress local_IP(192, 168, XX, XXX); // Your ESP8266's IP address
-IPAddress gateway(192, 168, XX, X); // Your router's IP address
+const char* ssid = "YOUR_SSID";
+const char* password = "YOUR_PASSWORD";
+
+IPAddress local_IP(192, 168, XX, XX); // REPLACE WITH YOUR DEVICE IP ADDRESS OF CHOICE
+IPAddress gateway(192, 168, XX, X);   // REPLACE WITH YOUR GATEWAY ADDRESS
 IPAddress subnet(255, 255, 255, 0);
 
 const int greenLED = D1;

@@ -4,11 +4,9 @@
 #include <stdlib.h>             // free
 #include <string.h>             // memset
 #include <unistd.h>             // read
-
 #include "safeinput.h"          // GetInputInt
 #include "card_management.h"    // Struct accessCard
 #include "door_control.h"       // Lock/unlock door
-#include "util_sleep.h"         // portableSleep
 #include "card_reader.h"        // cardAuthentication
 #include "connect_serial.h"     // Serial read function
 #include "input_output.h"       // getRFIDCardNumber
@@ -50,7 +48,7 @@ unsigned long int rfidReading(accessCard *pAccessCards, size_t *pCardCount, int 
     while (1) {
         unsigned long int cardNumber = 0; // REPLACE with card ID from MCU - FAKE by typing card 1000, 1002, 1003 f.e.
         // Read from serial port
-        char *line = serialRead(serial_port);
+        char *line = serialRead(serial_port); // This function waits for serialRead and then continues
         if (line) {
             cardNumber = hexToUint(line); // Convert hex string to unsigned int
             if (cardNumber != 0) {
@@ -66,8 +64,8 @@ unsigned long int rfidReading(accessCard *pAccessCards, size_t *pCardCount, int 
             free(line); // Free the allocated memory
             return cardNumber; // Return card number
         }
-        portableSleep(500); // Wait for 0.5 second before reading again
     }
+    return 0;
 }
 
 int cardAuthentication(accessCard *pAccessCards, size_t *pCardCount, unsigned long int cardNumber) {

@@ -35,7 +35,7 @@ void listAllCards(accessCard *pAccessCards, size_t *pCardCount) {
 }
 
 // Add or remove access for individual RFID cards
-void addRemoveAccess(accessCard *pAccessCards, size_t *pCardsMallocated, size_t *pCardCount, unsigned int *pCardRead) {
+void addRemoveAccess(accessCard *pAccessCards, size_t *pCardsMallocated, size_t *pCardCount, unsigned long int *pCardRead) {
     unsigned long int cardNumber;
 
    // TODO: Move to admin_menu.c
@@ -49,6 +49,7 @@ void addRemoveAccess(accessCard *pAccessCards, size_t *pCardsMallocated, size_t 
                 portableSleep(300); // Sleep to not consume too much CPU
             }
             cardNumber = *pCardRead;
+            *pCardRead = 0; // Reset cardRead to 0
             break;
         } else if (choice == 2) {
             char *cardNumberInput = malloc(sizeof(char) * CARD_ID_LENGTH); // 8 chars + 3 spaces + \0 = 12 chars => CHANGE TO GLOBAL VARIABLE?

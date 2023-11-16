@@ -12,7 +12,7 @@ void remoteOpenDoor(void) {
     lockUnlockMechanism(DOOR_UNLOCKED);
     // Confirm that MCU door controller executed command (will only run if NOT in simulation mode).
     if (sock != -1) {
-        printf("Door successfully unlocked!\n");
+        printf("Door successfully unlocked and re-locked!\n");
     }
 }
 
@@ -23,26 +23,24 @@ void lockUnlockMechanism(int doorLock) {
         case DOOR_UNLOCKED:
             // Code to send signal to MCU to unlock door => GREEN LED
             if (sock != -1) {
-                result = wifiWrite("DOOR_UNLOCKED"); // connect_wifi.c
+                result = wifiWrite("DOOR_UNLOCKED\r"); // connect_wifi.c
                 if (result == 0) {
                     doorStatus = DOOR_UNLOCKED;
-                    // printf("Door unlocked!\n");
                 }
             } else {
                 printf("CURRENTLY LAMP IS: \033[1;32mGreen\033[0m \033[3;36m\t(simulation mode)\033[0m\n");
                 portableSleep(3000); // Wait for 3 seconds to simulate door lock/unlock
                 doorStatus = DOOR_UNLOCKED;
+                portableSleep(3000); // Sleep for 3 seconds until locking door again.
+                lockUnlockMechanism(DOOR_LOCKED);
             }
-            portableSleep(100); // Wait to time LED on door controller (otherwise not queing up correct on MCU).
-            lockUnlockMechanism(DOOR_LOCKED);
             break;
         case DOOR_LOCKED:
             // Code to send signal to MCU to lock door => RED LED
             if (sock != -1) {
-                result = wifiWrite("DOOR_LOCKED"); // connect_wifi.c
+                result = wifiWrite("DOOR_LOCKED\r"); // connect_wifi.c
                 if (result == 0) {
                     doorStatus = DOOR_LOCKED;
-                    // printf("Door locked!\n");
                 }
             } else {
                 printf("CURRENTLY LAMP IS: \033[1;31mRed\033[0m \033[3;36m\t\t(simulation mode)\033[0m\n");
