@@ -116,7 +116,6 @@ void *runCardReader(void *args) {
 
     // Connect to the RFID reader on the serial port
     int serial_port = serialConnect(actualArgs->pConfig->rfid_serial_port); // card_reader.c
-
     // If the serial port could not be opened, exit the thread
     if (serial_port == -1) {
         actualArgs->runCardReaderThread = false;

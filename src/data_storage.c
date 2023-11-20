@@ -80,7 +80,18 @@ void saveConfig(const char* filename, Configuration *config) {
         return;
     }
 
-    fprintf(file, "rfid_serial_port = %s\n", config->rfid_serial_port);
+    #ifdef _WIN32
+        fprintf(file, "rfid_serial_port_win32 = %s\n", config->rfid_serial_port);
+    #elif defined(__linux__)
+        fprintf(file, "rfid_serial_port_linux = %s\n", config->rfid_serial_port);
+    #elif defined(__APPLE__)
+        fprintf(file, "rfid_serial_port_mac = %s\n", config->rfid_serial_port);
+        printf("rfid_serial_port_mac = %s\n", config->rfid_serial_port);
+    #else
+        #error "Unknown Operating System"
+    #endif
+
+    // fprintf(file, "rfid_serial_port = %s\n", config->rfid_serial_port);
     fprintf(file, "door_ip_address = %s\n", config->door_ip_address);
     fprintf(file, "door_tcp_port = %d\n", config->door_tcp_port);
 
@@ -131,7 +142,15 @@ Configuration* readConfig(const char* filename) {
         line[strcspn(line, "\n")] = 0; // Remove newline character
 
         if (strstr(line, "rfid_serial_port") != NULL) {
-            sscanf(line, "rfid_serial_port = %s", config->rfid_serial_port);
+            #ifdef _WIN32
+                fprintf(file, "rfid_serial_port_win32 = %s\n", config->rfid_serial_port);
+            #elif defined(__linux__)
+                fprintf(file, "rfid_serial_port_linux = %s\n", config->rfid_serial_port);
+            #elif defined(__APPLE__)
+                sscanf(line, "rfid_serial_port_mac = %s", config->rfid_serial_port);
+            #else
+                #error "Unknown Operating System"
+            #endif
         } else if (strstr(line, "door_ip_address") != NULL) {
             sscanf(line, "door_ip_address = %s", config->door_ip_address);
         } else if (strstr(line, "door_tcp_port") != NULL) {
