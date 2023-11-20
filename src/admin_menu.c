@@ -53,7 +53,7 @@ void adminMenu(accessCard *pAccessCards, size_t *pCardsMallocated, size_t *pCard
         int choice = getMenuChoice(options, optionsSize);
         switch (choice) {
             case 0:
-                printMenu(headerTitle, headerLength, options, optionsSize); // input_output.c
+                // Only to let user display options again!
                 break;
             case 1:
                 remoteOpenDoor();

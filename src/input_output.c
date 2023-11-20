@@ -38,14 +38,14 @@ int getPassword(char* password, int passwordMaxLength){
             printf("\033[32m* Password accepted!\033[0m\n");
             return 1; // return success!
         } else {
-            printf("\033[31m* Invalid password format! Try Again!\033[0m\n");
+            printf("\033[31m* Wrong password! Try Again!\033[0m\n");
         }
     }
 }
 
 int getNewPassword(char* newPassword, size_t passwordMaxLength){
     while (1) {
-        GetInput("\n\033[1;36mEnter password (0 = exit) >>\033[0m ", newPassword, passwordMaxLength);
+        GetInput("\n\033[1;36mEnter NEW password (0 = exit) >>\033[0m ", newPassword, passwordMaxLength);
 
         if (newPassword[0] == '0') {
             return -1; // exit and return to menu

@@ -8,6 +8,7 @@ DO NOT USE FOR PRODUCTION CODE - THIS IS NOT SECURE AND ONLY FOR TESTING PURPOSE
 */
 
 #define PASSWORD_MAX_LENGTH 21
+#define KEY "rockNroll"
 
 void encrypt(const char *input, char *output, const char *key) {
     int len = strlen(input);
@@ -24,9 +25,16 @@ void decrypt(const char *input, char *output, const char *key) {
 }
 
 int promptAdminPassword(void){
-    char *adminPw = "admin";
+    FILE *file = fopen("password.txt", "r");
+    if (!file) return -1;
 
-    if (getPassword(adminPw, PASSWORD_MAX_LENGTH)) { // input_output.c
+    char adminPwEncrypted[PASSWORD_MAX_LENGTH];
+    fgets(adminPwEncrypted, PASSWORD_MAX_LENGTH, file);
+
+    char adminPwDecrypted[PASSWORD_MAX_LENGTH];
+    decrypt(adminPwEncrypted, adminPwDecrypted, KEY);
+
+    if (getPassword(adminPwDecrypted, PASSWORD_MAX_LENGTH)) { // input_output.c
         return 1; // true
     } else {
         return 0; // false
@@ -35,7 +43,6 @@ int promptAdminPassword(void){
 
 int changeAdminPassword(void){
     char newPassword[PASSWORD_MAX_LENGTH];
-    char *key = "rockNroll";
 
     if (promptAdminPassword() == 0) {
         return -1; // exit and return to menu
@@ -46,7 +53,7 @@ int changeAdminPassword(void){
     }
 
     char encryptedPassword[PASSWORD_MAX_LENGTH];
-    encrypt(newPassword, encryptedPassword, key);
+    encrypt(newPassword, encryptedPassword, KEY);
 
     const char* filename = "password.txt";
     FILE *file = fopen(filename, "w");

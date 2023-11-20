@@ -27,17 +27,17 @@ pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
 bool isCardReaderReady = false;
 
-void startThreads(ThreadArgs *args); // Start multithreading with 2 threads.
-void *runCardReader(void *args);     // Thread 1: MCU Card reader (Arduino/ESP32)
-void *runAdminConsol(void *args);    // Thread 2: Admin console UI (Linux/Windows/Mac)
+void startThreads(ThreadArgs *args);   // Start multithreading with 2 threads.
+void *runCardReader(void *args);       // Thread 1: MCU Card reader (Arduino/ESP32)
+void *runAdminConsol(void *args);      // Thread 2: Admin console UI (Linux/Windows/Mac)
 
 int main(void) {
     printf("\n\033[1m*** DOOR ACCESS CONTROL SYSTEM ***\033[0m\n");
 
     // Load access cards from file into memory (heap)
-    size_t cardsMallocated = 10; // Initial value to alloc for amount of cards
+    size_t cardsMallocated = 10;    // Initial value to alloc for amount of cards
     size_t *pCardsMallocated = &cardsMallocated;
-    size_t cardCount = 0; // retrieveAccessCards() will count lines & update cardCount
+    size_t cardCount = 0;           // retrieveAccessCards() will count lines & update cardCount
     size_t *pCardCount = &cardCount; 
     accessCard *pAccessCards = retrieveAccessCards(&cardsMallocated, &cardCount); // Do not forget to free memory
 
@@ -47,7 +47,7 @@ int main(void) {
     // Check if access cards were loaded successfully from file to heap.
     if (pAccessCards == NULL) {
         fprintf(stderr, "\033[31m* Failed to load access cards. Exiting program...\033[0m\n");
-        return 1;
+        return EXIT_FAILURE;
     } else {
         printf("\033[32m* Loaded %zu access cards from file 'access_cards.csv' into memory location: %p\033[0m\n", cardCount, (void *)pAccessCards);
     }
