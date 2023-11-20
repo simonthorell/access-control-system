@@ -24,14 +24,15 @@ void lockUnlockMechanism(int doorLock) {
             // Code to send signal to MCU to unlock door => GREEN LED
             if (sock != -1) {
                 result = wifiWrite("DOOR_UNLOCKED\r"); // connect_wifi.c
-                if (result == 0) {
+                if (result == 0) { // check if MCU door controller executed command
                     doorStatus = DOOR_UNLOCKED;
+                    portableSleep(300); // Wait to avoid TCP/IP package loss
                 }
             } else {
-                printf("\nCURRENTLY LAMP IS: \033[1;32mGreen\033[0m \033[3;36m\t(simulation mode)\033[0m");
+                printf("\nCURRENTLY LAMP IS: \033[1;32mGreen\033[0m \033[3;36m\t(simulation mode)\033[0m\n");
                 doorStatus = DOOR_UNLOCKED;
+                portableSleep(3000); // Wait to simulate door lock/unlock
             }
-            portableSleep(3000); // Wait to avoid TCP/IP package loss
             lockUnlockMechanism(DOOR_LOCKED);
             break;
         case DOOR_LOCKED:
@@ -42,12 +43,17 @@ void lockUnlockMechanism(int doorLock) {
                     doorStatus = DOOR_LOCKED;
                 }
             } else {
-                printf("\nCURRENTLY LAMP IS: \033[1;31mRed\033[0m \033[3;36m\t\t(simulation mode)\033[0m");
+                // Solving bug that occurs with Sleep in simulation mode
+                if (doorStatus == DOOR_LOCKED) {
+                    printf("\n");
+                    portableSleep(3000);
+                }
+                printf("CURRENTLY LAMP IS: \033[1;31mRed\033[0m \033[3;36m\t\t(simulation mode)\033[0m\n");
                 doorStatus = DOOR_LOCKED;
                 portableSleep(3000); // Wait to simulate door lock/unlock
-                printf("\nCURRENTLY LAMP IS: \033[1;90mOff\033[0m \033[3;36m\t\t(simulation mode)\033[0m\n");
+                printf("CURRENTLY LAMP IS: \033[1;90mOff\033[0m \033[3;36m\t\t(simulation mode)\033[0m\n");
                 
-            }
+            }   
             break;
     }
 }
