@@ -3,8 +3,7 @@
 #include "card_management.h"    // listAllCards, addRemoveAccess
 #include "card_reader.h"        // fakeTestScanCard
 #include "admin_menu.h"         // MenuOptions struct
-
-#include "encrypt_decrypt.h"   // encryptPassword, decryptPassword
+#include "encrypt_decrypt.h"    // encryptPassword, decryptPassword
 
 int systemMenu(accessCard *pAccessCards, size_t *pCardsMallocated, size_t *pCardCount, unsigned long int *pCardRead) {
     char *headerTitle = "SYSTEM MENU";

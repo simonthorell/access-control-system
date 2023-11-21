@@ -43,11 +43,22 @@ void addRemoveAccess(accessCard *pAccessCards, size_t *pCardsMallocated, size_t 
         int choice = scanCardSubMenu(); // admin_menu.c
 
         if (choice == 1) {
-            printf("Scan RFID card...\n");
-            while (*pCardRead == 0) {
+            printInfoMessage("Scan RFID card...");
+            int countDown = 5;
+            while (*pCardRead == 0 && countDown > 0) {
                 // Wait for access card to be read on RFID reader
-                portableSleep(300); // Sleep to not consume too much CPU
+                portableSleep(1000); // Sleep to not consume too much CPU
+                countDown--;
+                if (countDown == 0) {
+                    printErrorMessage("No card detected...");
+                    break;
+                }
             }
+
+            if (countDown == 0) {
+                continue; // Skip the rest of the loop body and start from scanCardSubMenu() again
+            }
+
             cardNumber = *pCardRead;
             *pCardRead = 0; // Reset cardRead to 0
             break;
