@@ -20,7 +20,7 @@ typedef struct {
     accessCard *pAccessCards;
     Configuration *pConfig;             // Pointer to Configuration struct
     unsigned long int *pCardRead;       // Last read card number from MCU RFID card reader
-    volatile bool runCardReaderThread;  // TODO: Change to atomic bool
+    volatile bool *pRunCardReaderThread;  // TODO: Change to atomic bool
 } ThreadArgs;
 
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -40,6 +40,8 @@ int main(void) {
     size_t cardCount = 0;           // retrieveAccessCards() will count lines & update cardCount
     size_t *pCardCount = &cardCount; 
     accessCard *pAccessCards = retrieveAccessCards(&cardsMallocated, &cardCount); // Do not forget to free memory
+    volatile bool runCardReaderThread = true;
+    volatile bool *pRunCardReaderThread = &runCardReaderThread;
 
     unsigned long int cardRead = 0;           // Card number read by MCU RFID card reader
     unsigned long int *pCardRead = &cardRead; // Pointer to last card read by MCU RFID card reader.
@@ -64,7 +66,7 @@ int main(void) {
     tcpConnect(pConfig->door_ip_address); 
 
     // Start multithreading - 1. MCU Card reader, 2. Admin console UI
-    ThreadArgs args = {pCardsMallocated, pCardCount, pAccessCards, pConfig, pCardRead, true};
+    ThreadArgs args = {pCardsMallocated, pCardCount, pAccessCards, pConfig, pCardRead, pRunCardReaderThread};
     startThreads(&args);
 
     // close TCP/IP connection
@@ -118,7 +120,7 @@ void *runCardReader(void *args) {
     int serial_port = serialConnect(actualArgs->pConfig->rfid_serial_port); // card_reader.c
     // If the serial port could not be opened, exit the thread
     if (serial_port == -1) {
-        actualArgs->runCardReaderThread = false;
+        actualArgs->pRunCardReaderThread = false;
         isCardReaderReady = true;
         pthread_cond_signal(&cond);
         pthread_mutex_unlock(&mutex);
@@ -129,13 +131,11 @@ void *runCardReader(void *args) {
         pthread_cond_signal(&cond);
         pthread_mutex_unlock(&mutex);
     }
-    
-    volatile bool *runCardReaderThread = &actualArgs->runCardReaderThread;
 
     // Run the MCU card reader until the admin console request to shut down the system.
-    while (actualArgs->runCardReaderThread) {
+    while (actualArgs->pRunCardReaderThread) {
         // This will re-loop everytime a card has been read by the MCU RFID card reader.
-        *actualArgs->pCardRead = rfidReading(runCardReaderThread, actualArgs->pAccessCards, actualArgs->pCardCount, serial_port); // card_reader.c
+        *actualArgs->pCardRead = rfidReading(actualArgs->pRunCardReaderThread, actualArgs->pAccessCards, actualArgs->pCardCount, serial_port); // card_reader.c
         // pCardRead is reset to 0 by the function consuming the card number (See addRemoveAccess() in 'card_management.c')
 
         // TEMP FIX TO RESET CARD
@@ -160,7 +160,7 @@ void *runAdminConsol(void *args) {
     int menu = systemMenu(actualArgs->pAccessCards, actualArgs->pCardsMallocated, actualArgs->pCardCount, actualArgs->pCardRead); // admin_menu.c
 
     if (menu == 0) {
-        actualArgs->runCardReaderThread = false;
+        actualArgs->pRunCardReaderThread = false;
         printf("\033[33m* Shutting down system...\033[0m\n");
     } else {
         printf("\033[31m* System did not shut down correctly!\033[0m\n");
