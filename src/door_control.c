@@ -2,14 +2,14 @@
 #include <stdio.h>
 #include "util_sleep.h"
 #include "connect_tcp_ip.h" // Connect to Wemos D1 Mini controlling door lock
+#include "input_output.h" // printInfoMessage
 
 // Set initial value of global variable to door locked.
 int doorStatus = DOOR_LOCKED;
 
 // Open door from admin menu
 void remoteOpenDoor(void) {
-    printf("Remote unlocking door...\n");
-    printf("Socket: %d\n", sock);
+    printInfoMessage("Remote unlocking door...");
     lockUnlockMechanism(DOOR_UNLOCKED);
     // Confirm that MCU door controller executed command (will only run if NOT in simulation mode).
     if (sock != -1) {

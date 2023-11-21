@@ -11,6 +11,7 @@
 #include "card_reader.h"
 #include "input_output.h"       // print, get user input
 #include "util_sleep.h"         // portableSleep
+#include "status_messages.h"    // Custom error/success handling
 
 void listAllCards(accessCard *pAccessCards, size_t *pCardCount) {
     printMenuHeader("REGISTERED ACCESS CARDS", 73); // input_output.c
@@ -88,8 +89,7 @@ void addRemoveAccess(accessCard *pAccessCards, size_t *pCardsMallocated, size_t 
     while (left <= right) {
         middle = left + (right - left) / 2; // To prevent potential overflow
         if (pAccessCards[middle].cardNumber == cardNumber) {
-            const char *accessStrings[] = {"NO ACCESS", "ACCESS"};
-            printf("Card with RFID '%s' found with current access status: %s\n", uintToHex(cardNumber), accessStrings[pAccessCards[middle].cardAccess]);
+            printStatusMessage(SUCCESS, "Card with RFID '%s' found with current access status: %s", uintToHex(cardNumber), pAccessCards[middle].cardAccess == ACCESS ? "\033[32mACCESS\033[0m  " : "\033[31mNO ACCESS\033[0m");
             updateCardSubMenu(pAccessCards, pCardCount, middle);
             found = true;
             break;
@@ -105,7 +105,7 @@ void addRemoveAccess(accessCard *pAccessCards, size_t *pCardsMallocated, size_t 
         // Ask to add new card
         while (true) {
             char *cardNumberString = uintToHex(cardNumber);
-            printf("Card with RFID '%s' not found. Do you want to add a new card?\n", cardNumberString);
+            printStatusMessage(ERROR_GENERAL, "Card with RFID '%s' not found", cardNumberString);
             int choice = addNewCardSubMenu(); // admin_menu.c
             free(cardNumberString); // Free the allocated memory
 
@@ -140,22 +140,22 @@ void addNewCard(accessCard **pAccessCards, size_t *pCardsMallocated, size_t *pCa
         (*pAccessCards)[i] = (*pAccessCards)[i - 1];
     }
     (*pCardCount)++;
-
-    printf("%zu cards stored and current allocation is %zu cards.\n", *pCardCount, *pCardsMallocated);
+    printInfoMessage("%zu cards stored and current allocation is %zu cards", *pCardCount, *pCardsMallocated);
 
     // Create new card at new empty spot (cardIndex) in array
-    
     (*pAccessCards)[cardIndex].cardNumber = cardNumber;
     setCardAccess(*pAccessCards, cardIndex);
-    printf("New card with ID '%s' has been registered.\n", uintToHex(cardNumber));
+    printStatusMessage(SUCCESS, "New card with ID '%s' has been registered", uintToHex(cardNumber));
 }
 
 void setCardAccess(accessCard *pAccessCards, size_t cardIndex) {
     int cardAccess;
-    const char *accessStrings[] = {"NO ACCESS", "ACCESS"};
+    // const char *accessStrings[] = {"NO ACCESS", "ACCESS"};
 
-    GetInputInt("Enter new card access (0 = NO ACCESS, 1 = ACCESS): ", &cardAccess);
-    printf("Card updated with access status: %s\n", accessStrings[pAccessCards[cardIndex].cardAccess]);
+    cardAccess = updateAccessMenu(); // admin_menu.c
+    // GetInputInt("Enter new card access (0 = NO ACCESS, 1 = ACCESS): ", &cardAccess);
+    printStatusMessage(SUCCESS, "Card updated with access status: %s", pAccessCards[cardAccess].cardAccess == ACCESS ? "\033[31mNO ACCESS\033[0m" : "\033[32mACCESS\033[0m");
+    // printStatusMessage(SUCCESS, "Card updated with access status: %s", accessStrings[cardAccess]);
     pAccessCards[cardIndex].cardAccess = cardAccess;
     pAccessCards[cardIndex].dateCreated = time(NULL); // Generate current date/time
 }
@@ -164,7 +164,7 @@ void setCardAccess(accessCard *pAccessCards, size_t cardIndex) {
 void removeCard(accessCard **pAccessCards, size_t *pCardCount, size_t cardIndex) {
     // printf("Card count: %zu\n", *pCardCount);
     // printf("Card index '%zu'...\n", cardIndex);
-    printf("Removing card with ID '%s'...\n", uintToHex((*pAccessCards)[cardIndex].cardNumber));
+    printInfoMessage("Removing card with ID '%s'...", uintToHex((*pAccessCards)[cardIndex].cardNumber));
 
     // Check if the cardIndex is valid
     if (cardIndex >= *pCardCount) {

@@ -9,7 +9,8 @@
 #include "door_control.h"       // Lock/unlock door
 #include "card_reader.h"        // cardAuthentication
 #include "connect_serial.h"     // Serial read function
-#include "input_output.h"       // getRFIDCardNumber
+#include "input_output.h"       // getRFIDCardNumber, printStatusMessage
+#include "status_messages.h"    // Custom error/success handling
 
 // Establish connection to door controller (ESP8266)
 #include "connect_tcp_ip.h"       // sock
@@ -26,14 +27,14 @@ void fakeTestScanCard(accessCard *pAccessCards, size_t *pCardCount) {
     int cardAuthenticated = cardAuthentication(pAccessCards, pCardCount, cardNumber);
 
     if (cardAuthenticated) {
-        printf("Card authenticated! Access granted!\n");
+        printStatusMessage(SUCCESS, "Card authenticated! Access granted!");
         lockUnlockMechanism(DOOR_UNLOCKED);
         // Validate that door controller MCU received and successfully executed locking mechanism. 
         if (!doorStatus) {
             // printf("Door successfully unlocked!\n");
         }
     } else {
-        printf("Card authenticated! Access denied!\n");
+        printStatusMessage(ERROR_GENERAL, "Card authenticated! Access denied!");
         lockUnlockMechanism(DOOR_LOCKED);
         // Validate that door controller MCU received and successfully executed locking mechanism. 
         if (doorStatus) {
@@ -65,7 +66,7 @@ unsigned long int rfidReading(volatile bool *runCardReaderThread, accessCard *pA
             return cardNumber; // Return card number
         }
     }
-    return 0;
+    return SUCCESS;
 }
 
 int cardAuthentication(accessCard *pAccessCards, size_t *pCardCount, unsigned long int cardNumber) {
@@ -110,8 +111,8 @@ char *uintToHex(unsigned long int cardNumber) {
     char *cardNumberString = malloc(sizeof(char) * 12); // 8 chars + 3 spaces + \0 = 12 chars // Only works for 32-bit unsigned long int (4 bytes)
     // char *cardNumberString = malloc(sizeof(char) * 24); // Modified for 64-bit unsigned long int (8 bytes)
     if (cardNumberString == NULL) {
-        printf("Error allocating memory for cardNumberString\n");
-        exit(EXIT_FAILURE);
+        printStatusMessage(ERROR_OUT_OF_MEMORY, "Error allocating memory for cardNumberString");
+        exit(ERROR_OUT_OF_MEMORY);
     }
 
     sprintf(cardNumberString, "%02lX %02lX %02lX %02lX", 

@@ -16,5 +16,6 @@ void adminMenu(accessCard *pAccessCards, size_t *pCardsMallocated, size_t *pCard
 int scanCardSubMenu(void);
 int addNewCardSubMenu(void);
 void updateCardSubMenu(accessCard *pAccessCards, size_t *pCardCount, size_t cardIndex);
+int updateAccessMenu(void);
 
 #endif

@@ -165,7 +165,7 @@ void *runAdminConsol(void *args) {
     int menu = systemMenu(actualArgs->pAccessCards, actualArgs->pCardsMallocated, actualArgs->pCardCount, actualArgs->pCardRead); // admin_menu.c
 
     if (menu == 0) {
-        *actualArgs->pRunCardReaderThread = false;
+        actualArgs->pRunCardReaderThread = false;
         printInfoMessage("Shutting down system...");
     }
 
