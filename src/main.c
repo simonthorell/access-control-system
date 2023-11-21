@@ -125,12 +125,11 @@ void *runCardReader(void *args) {
     // Connect to the RFID reader on the serial port
     int serial_port = serialConnect(actualArgs->pConfig->rfid_serial_port); // card_reader.c
     // If the serial port could not be opened, exit the thread
-    if (serial_port != SUCCESS) {
+    if (serial_port == ERROR_OPERATION_FAILED) {
         actualArgs->pRunCardReaderThread = false;
         isCardReaderReady = true;
         pthread_cond_signal(&cond);
         pthread_mutex_unlock(&mutex);
-        printSimulationMessage("Running RFID reader simulation mode...");
         return NULL;
     } else {
         isCardReaderReady = true;
@@ -139,13 +138,13 @@ void *runCardReader(void *args) {
     }
 
     // Run the MCU card reader until the admin console request to shut down the system.
-    while (actualArgs->pRunCardReaderThread) {
+    while (*actualArgs->pRunCardReaderThread) {
         // This will re-loop everytime a card has been read by the MCU RFID card reader.
         *actualArgs->pCardRead = rfidReading(actualArgs->pRunCardReaderThread, actualArgs->pAccessCards, actualArgs->pCardCount, serial_port); // card_reader.c
         // pCardRead is reset to 0 by the function consuming the card number (See addRemoveAccess() in 'card_management.c')
 
         // TODO: Could the be achieved with a mutex instead of a sleep?
-        portableSleep(300); // Sleep for 1 second
+        portableSleep(1000); // Sleep for 1 second
         *actualArgs->pCardRead = 0;
     }
 
@@ -166,7 +165,7 @@ void *runAdminConsol(void *args) {
     int menu = systemMenu(actualArgs->pAccessCards, actualArgs->pCardsMallocated, actualArgs->pCardCount, actualArgs->pCardRead); // admin_menu.c
 
     if (menu == 0) {
-        actualArgs->pRunCardReaderThread = false;
+        *actualArgs->pRunCardReaderThread = false;
         printInfoMessage("Shutting down system...");
     }
 

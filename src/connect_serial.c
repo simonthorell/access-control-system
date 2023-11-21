@@ -17,6 +17,7 @@ int serialConnect(char *port) {
     
     if (serial_port == -1) {
         printStatusMessage(ERROR_OPERATION_FAILED, "Could not connect to RFID reader on serial port '%s' (check settings in admin menu!)", port);
+        printSimulationMessage("Running RFID reader simulation mode");
         return ERROR_OPERATION_FAILED; // Return error for handling in caller
     } else {
         printStatusMessage(SUCCESS, "Connected to RFID reader on serial port %s", port);

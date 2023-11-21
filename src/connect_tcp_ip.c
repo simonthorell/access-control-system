@@ -16,13 +16,13 @@
 int sock = -1;
 
 int tcpConnect(char *ipAddress) {
-    printInfoMessage("Attempting to connect to wireless door controller (ESP8266EX MCU) at IP address: %s", ipAddress);
+    printInfoMessage("Attempting to connect to wireless door controller (ESP8266EX MCU) at IP address: %s...", ipAddress);
     int connected = establishConnection(ipAddress);
     if (connected == SUCCESS) {
         printStatusMessage(SUCCESS, "Connected to door controller MCU via TCP/IP socket: %d", sock);
     } else {
-        printStatusMessage(ERROR_OPERATION_FAILED, "Failed to connect to door controller MCU via TCP/IP socket.");
-        printSimulationMessage("Running door controller in simulation mode...");
+        printStatusMessage(ERROR_OPERATION_FAILED, "Failed to connect to door controller MCU via TCP/IP socket");
+        printSimulationMessage("Running door controller in simulation mode");
     }
 
     return sock;
