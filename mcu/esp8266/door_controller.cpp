@@ -3,6 +3,7 @@ It receives commands from a server application and controls the LEDs accordingly
 The pins used for LED's are D1 and D2 which could instead be routed to a relay to control a door lock.
 */ 
 
+#include <Arduino.h>
 #include <ESP8266WiFi.h>
 
 // when sending TCP/IP command, do not forget to end string with \r. 
@@ -27,7 +28,14 @@ const int SERVER_PORT = 23;
 
 WiFiServer server(SERVER_PORT);
 
-unsigned long lastCommandTime = 0; // Move this declaration outside of any functions
+unsigned long lastCommandTime = 0; 
+
+// Function prototypes
+bool configureWiFi(void);
+bool startServer(void);
+void initializeHardware(void);
+void handleClientRequest(WiFiClient client);
+void handleLEDs(void);
 
 void setup() {
   pinMode(greenLED, OUTPUT);
@@ -55,19 +63,19 @@ void loop() {
   }
 }
 
-bool configureWiFi() {
+bool configureWiFi(void) {
   // Wi-Fi configuration code here
   WiFi.hostname("wemos_d1_mini");
   return WiFi.config(local_IP, gateway, subnet) && WiFi.begin(ssid, password) == WL_CONNECTED;
 }
 
-bool startServer() {
+bool startServer(void) {
   // Server startup code here
   server.begin();
   return true; // Always return true since server.begin() doesn't return a value
 }
 
-void initializeHardware() {
+void initializeHardware(void) {
   // LED and serial initialization code here
   digitalWrite(greenLED, LOW);
   digitalWrite(redLED, LOW);
@@ -122,7 +130,7 @@ void handleClientRequest(WiFiClient client) {
   client.stop();
 }
 
-void handleLEDs() {
+void handleLEDs(void) {
   if (greenLedOn && millis() - lastCommandTime < LED_DURATION) {
     digitalWrite(greenLED, HIGH);
   } else {
