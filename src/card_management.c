@@ -150,20 +150,14 @@ void addNewCard(accessCard **pAccessCards, size_t *pCardsMallocated, size_t *pCa
 
 void setCardAccess(accessCard *pAccessCards, size_t cardIndex) {
     int cardAccess;
-    // const char *accessStrings[] = {"NO ACCESS", "ACCESS"};
-
     cardAccess = updateAccessMenu(); // admin_menu.c
-    // GetInputInt("Enter new card access (0 = NO ACCESS, 1 = ACCESS): ", &cardAccess);
     printStatusMessage(SUCCESS, "Card updated with access status: %s", pAccessCards[cardAccess].cardAccess == ACCESS ? "\033[31mNO ACCESS\033[0m" : "\033[32mACCESS\033[0m");
-    // printStatusMessage(SUCCESS, "Card updated with access status: %s", accessStrings[cardAccess]);
     pAccessCards[cardIndex].cardAccess = cardAccess;
     pAccessCards[cardIndex].dateCreated = time(NULL); // Generate current date/time
 }
 
 
 void removeCard(accessCard **pAccessCards, size_t *pCardCount, size_t cardIndex) {
-    // printf("Card count: %zu\n", *pCardCount);
-    // printf("Card index '%zu'...\n", cardIndex);
     printInfoMessage("Removing card with ID '%s'...", uintToHex((*pAccessCards)[cardIndex].cardNumber));
 
     // Check if the cardIndex is valid

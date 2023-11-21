@@ -85,7 +85,7 @@ int main(void) {
     // Clean up memory
     free(pAccessCards);  // Free memory allocated by retrieveAccessCards() in data_storage.c
     free(pConfig);       // Free memory allocated by readConfig() in data_storage.c
-    printStatusMessage(SUCCESS, "Memory deallocated successfully!");
+    printStatusMessage(SUCCESS, "Memory deallocated successfully");
     printMenuHeader("PROGRAM EXITED SUCCESSFULLY", 36); // "DOOR ACCESS CONTROL SYSTEM
 
     return EXIT_SUCCESS;
