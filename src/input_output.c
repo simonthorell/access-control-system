@@ -1,11 +1,45 @@
 #include <stdio.h>
+#include <stdarg.h>          // va_list, va_start, va_arg, va_end
 #include <stdlib.h>
 #include <string.h>
+
 #include "safeinput.h"
 #include "card_management.h" // validateRFIDFormat
 #include "input_output.h"
 
-// User input
+/********************************************
+ *              MESSAGE OUTPUT
+ ********************************************/
+
+// Call error messages only from printStatusMessage() in status_messages.c
+void printSuccessMessage(const char *message) {
+    printf("\033[32m* %s\033[0m\n", message);
+}
+
+void printErrorMessage(const char *message) {
+    printf("\033[31m* %s\033[0m\n", message);
+}
+
+// Call info and simulation directly
+void printInfoMessage(const char *format, ...) {
+    va_list args;
+    va_start(args, format);
+
+    printf("\033[33m* ");
+    vprintf(format, args);
+    printf("\033[0m\n");
+
+    va_end(args);
+}
+
+void printSimulationMessage(const char *message) {
+    printf("\033[36m* %s\033[0m\n", message);
+}
+
+/********************************************
+ *                USER INPUT
+ ********************************************/
+
 int getMenuChoice(MenuOption *options, size_t menuOptionsSize){
     while (1) {
         int choice;
@@ -71,9 +105,14 @@ int getCardNumber(char* cardNumberInput, int cardIdLength){
     }
 }
 
+/********************************************
+ *               MENU OUTPUT
+ ********************************************/
+
 void printMenuHeader(char *menuHeader, int menuHeaderLength) {
     int stringLength = strlen(menuHeader) + 2; // +2 for the two spaces on each side of the menuHeader
-    int padding = (menuHeaderLength - stringLength) / 2;
+    int totalPadding = menuHeaderLength - stringLength;
+    int padding = totalPadding / 2;
     printf("\033[1;90m\n"); // Set color to gray
     
     for (int i = 0; i < padding; i++) {
@@ -81,6 +120,10 @@ void printMenuHeader(char *menuHeader, int menuHeaderLength) {
     }
     printf(" %s ", menuHeader);
 
+    // Check if total padding is odd, if so, add one extra * to make the header symmetric
+    if (totalPadding % 2 != 0) {
+        padding += 1;
+    }
     for (int i = 0; i < padding; i++) {
         printf("*");
     }
@@ -103,12 +146,5 @@ void printMenuFooter(int menuHeaderLength) {
 void printMenu(char *menuHeader, int headerFooterChars, MenuOption *options, size_t menuOptionsSize) {
     printMenuHeader(menuHeader, headerFooterChars);
     printMenuOptions(options, menuOptionsSize);
-    // printMenuFooter(headerFooterChars);
-
-    // If the header char amount is uneven, remove one char from the footer to match length. 
-    if (headerFooterChars % 2 == 0) {
-        printMenuFooter(headerFooterChars - 1);
-    } else {
-        printMenuFooter(headerFooterChars);
-    }
+    printMenuFooter(headerFooterChars);
 }

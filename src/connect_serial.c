@@ -7,16 +7,19 @@
 #include <termios.h>
 #include <time.h>
 
+#include "status_messages.h"
+#include "input_output.h"
+
 int serialConnect(char *port) {
-    printf("\033[33m* Attempting to connect to RFID reader (Arduino/ESP32) at serial port: %s\033[0m\n", port);
+    printInfoMessage("Connecting to RFID reader (Arduino/ESP32) via serial port...");
     // Open the serial port. Change device path as needed (currently set to an standard FTDI USB-UART cable type device)
     int serial_port = open(port, O_RDWR);
     
     if (serial_port == -1) {
-        printf("\033[31m* Could not connect to RFID reader on serial port '%s' \033[0m\033[33m(Check serial port settings in admin menu!)\033[0m\n", port);
-        return -1; // Return error for handling in caller
+        printStatusMessage(ERROR_OPERATION_FAILED, "Could not connect to RFID reader on serial port '%s' (check settings in admin menu!)", port);
+        return ERROR_OPERATION_FAILED; // Return error for handling in caller
     } else {
-        printf("\033[32m* Connected to RFID reader on serial port %s\033[0m\n", port);
+        printStatusMessage(SUCCESS, "Connected to RFID reader on serial port %s", port);
         return serial_port;
     }
 }

@@ -7,19 +7,22 @@
 #include <string.h>
 #include <errno.h> // errno, EINPROGRESS, EWOULDBLOCK
 #include <fcntl.h> // fcntl
+
 #include "connect_tcp_ip.h"
+#include "status_messages.h"
+#include "input_output.h"
 
 // Global socket descriptor
 int sock = -1;
 
 int tcpConnect(char *ipAddress) {
-    printf("\033[33m* Attempting to connect to wireless door controller (ESP8266EX MCU) at IP address: %s\033[0m\n", ipAddress);
+    printInfoMessage("Attempting to connect to wireless door controller (ESP8266EX MCU) at IP address: %s", ipAddress);
     int connected = establishConnection(ipAddress);
-    if (connected != -1) {
-        printf("\033[32m* Connected to door controller MCU via TCP/IP socket: %d\033[0m\n", sock);
+    if (connected == SUCCESS) {
+        printStatusMessage(SUCCESS, "Connected to door controller MCU via TCP/IP socket: %d", sock);
     } else {
-        printf("\033[31m* Failed to connect to door controller...\033[0m\n");
-        printf("\033[36m* Running door controller in simulation mode...\033[0m\n");
+        printStatusMessage(ERROR_OPERATION_FAILED, "Failed to connect to door controller MCU via TCP/IP socket.");
+        printSimulationMessage("Running door controller in simulation mode...");
     }
 
     return sock;

@@ -13,6 +13,8 @@
 #include "connect_tcp_ip.h"  // Connect to door controller MCU wireless via TCP/IP
 #include "connect_serial.h"  // Connect to RFID reader MCU via serial port
 #include "util_sleep.h"      // portableSleep - TEMPORARY FIX TO RESET CARD READER
+#include "status_messages.h" // Custom error/success handling
+#include "input_output.h"    // Custom input/output functions (printHeader, printMessage etc.)
 
 typedef struct {
     size_t *pCardsMallocated;
@@ -32,7 +34,7 @@ void *runCardReader(void *args);       // Thread 1: MCU Card reader (Arduino/ESP
 void *runAdminConsol(void *args);      // Thread 2: Admin console UI (Linux/Windows/Mac)
 
 int main(void) {
-    printf("\n\033[1m*** DOOR ACCESS CONTROL SYSTEM ***\033[0m\n");
+    printMenuHeader("DOOR ACCESS CONTROL SYSTEM", 34);
 
     // Load access cards from file into memory (heap)
     size_t cardsMallocated = 10;    // Initial value to alloc for amount of cards
@@ -48,10 +50,10 @@ int main(void) {
 
     // Check if access cards were loaded successfully from file to heap.
     if (pAccessCards == NULL) {
-        fprintf(stderr, "\033[31m* Failed to load access cards. Exiting program...\033[0m\n");
-        return EXIT_FAILURE;
+        printStatusMessage(ERROR_FILE_NOT_FOUND, "Failed to load access cards. Exiting program...");
+        return EXIT_FAILURE; // Exit program
     } else {
-        printf("\033[32m* Loaded %zu access cards from file 'access_cards.csv' into memory location: %p\033[0m\n", cardCount, (void *)pAccessCards);
+        printStatusMessage(SUCCESS, "Loaded %zu access cards from file 'access_cards.csv' into memory location: %p", cardCount, (void *)pAccessCards);
     }
 
     // Load hardware specifications from 'config.ini' file into memory (s)
@@ -72,15 +74,16 @@ int main(void) {
     // close TCP/IP connection
     closeConnection();
 
+    // TODO: Check conditions below using return codes from functions - statusMessages now HARDCODED!
     // save access cards to file
     saveAccessCards(pAccessCards, *pCardCount); // data_storage.c
-    printf("\033[32m* Saved %zu access cards to file 'access_cards.csv'\033[0m\n", *pCardCount);
+    printStatusMessage(SUCCESS, "Saved %zu access cards to file 'access_cards.csv'", *pCardCount);
 
     // Clean up memory
     free(pAccessCards);  // Free memory allocated by retrieveAccessCards() in data_storage.c
     free(pConfig);       // Free memory allocated by readConfig() in data_storage.c
-    printf("\033[32m* Memory deallocated successfully!\033[0m\n");
-    printf("\033[1;32m*** PROGRAM EXITED SUCCESSFULLY ***\033[0m\n");
+    printStatusMessage(SUCCESS, "Memory deallocated successfully!");
+    printMenuHeader("PROGRAM EXITED SUCCESSFULLY", 36); // "DOOR ACCESS CONTROL SYSTEM
 
     return EXIT_SUCCESS;
 }
@@ -119,12 +122,12 @@ void *runCardReader(void *args) {
     // Connect to the RFID reader on the serial port
     int serial_port = serialConnect(actualArgs->pConfig->rfid_serial_port); // card_reader.c
     // If the serial port could not be opened, exit the thread
-    if (serial_port == -1) {
+    if (serial_port != SUCCESS) {
         actualArgs->pRunCardReaderThread = false;
         isCardReaderReady = true;
         pthread_cond_signal(&cond);
         pthread_mutex_unlock(&mutex);
-        printf("\033[36m* Running RFID reader simulation mode...\033[0m\n");
+        printSimulationMessage("Running RFID reader simulation mode...");
         return NULL;
     } else {
         isCardReaderReady = true;
@@ -138,13 +141,13 @@ void *runCardReader(void *args) {
         *actualArgs->pCardRead = rfidReading(actualArgs->pRunCardReaderThread, actualArgs->pAccessCards, actualArgs->pCardCount, serial_port); // card_reader.c
         // pCardRead is reset to 0 by the function consuming the card number (See addRemoveAccess() in 'card_management.c')
 
-        // TEMP FIX TO RESET CARD
+        // TODO: Could the be achieved with a mutex instead of a sleep?
         portableSleep(300); // Sleep for 1 second
         *actualArgs->pCardRead = 0;
     }
 
     serialDisconnect(serial_port); // Close the serial port connection
-    return NULL; // No need to return a value, NULL is used when the return value is not used
+    return NULL; // No need to return a value, NULL is used when the return value is not used (required for POSIX threads)
 }
 
 void *runAdminConsol(void *args) {
@@ -161,10 +164,8 @@ void *runAdminConsol(void *args) {
 
     if (menu == 0) {
         actualArgs->pRunCardReaderThread = false;
-        printf("\033[33m* Shutting down system...\033[0m\n");
-    } else {
-        printf("\033[31m* System did not shut down correctly!\033[0m\n");
+        printInfoMessage("Shutting down system...");
     }
 
-    return NULL; // Return a null pointer since no value needs to be returned
+    return NULL; // Return a null pointer since no value needs to be returned (required for POSIX threads)
 }
