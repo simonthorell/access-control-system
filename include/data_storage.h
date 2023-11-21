@@ -16,7 +16,7 @@ accessCard* retrieveAccessCards(size_t *cardsMallocated, size_t *cardCount);
 // TODO: Load & Save access_logs.json file to/from memory
 
 // Load & Save config.ini file to/from memory
-void saveConfig(const char* filename, Configuration *config);
+int saveConfig(const char* filename, Configuration *config);
 Configuration* readConfig(const char* filename);
 
 #endif

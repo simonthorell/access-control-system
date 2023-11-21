@@ -3,11 +3,12 @@
 #include <stdlib.h> // malloc, free
 #include <string.h>
 #include <time.h>
+#include "status_messages.h" // custom error/success handling
 
 int saveAccessCards(accessCard *pAccessCards, size_t cardCount) {
     printf("\033[33m* Saving %zu access cards from memory location: %p to file 'access_cards.csv'...\033[0m\n", cardCount, (void *)pAccessCards);
     FILE *file = fopen("access_cards.csv", "w");
-    if (!file) return -1; // Could not open file for writing.
+    if (!file) return ERROR_FILE_NOT_FOUND; // Could not open file for writing.
 
     // Write header line to CSV file
     fprintf(file, "CardNumber,Status,DateCreated\n");
@@ -27,7 +28,7 @@ int saveAccessCards(accessCard *pAccessCards, size_t cardCount) {
     }
 
     fclose(file); // Close the file after writing
-    return 0; // Success
+    return SUCCESS; // Success
 }
 
 // NOTE! Caller is responsible for freeing the memory allocated by this function!
@@ -71,13 +72,13 @@ accessCard* retrieveAccessCards(size_t *cardsMallocated, size_t *cardCount) {
     return accessCards; // Caller is responsible for freeing the memory!!!
 }
 
-void saveConfig(const char* filename, Configuration *config) {
+int saveConfig(const char* filename, Configuration *config) {
     FILE *file;
 
     file = fopen(filename, "w");
     if (file == NULL) {
         perror("Error opening file");
-        return;
+        return ERROR_FILE_NOT_FOUND;
     }
 
     #ifdef _WIN32
@@ -96,22 +97,8 @@ void saveConfig(const char* filename, Configuration *config) {
     fprintf(file, "door_tcp_port = %d\n", config->door_tcp_port);
 
     fclose(file);
-    // When calling function: 
-    // Read the config
-    // Configuration *config = readConfig("config.ini");
 
-    // Check if config is not NULL
-    // if (config != NULL) {
-    //     // Modify the config as needed
-    //     // Example: strcpy(config->rfid_serial_port, "COM4");
-    //     // config->door_tcp_port = 1234;
-
-    //     // Save the updated config
-    //     saveConfig("config.ini", config);
-
-    //     // Don't forget to free the config memory after usage
-    //     free(config);
-    // }
+    return SUCCESS;
 }
 
 Configuration* readConfig(const char* filename) {

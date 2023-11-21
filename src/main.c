@@ -22,7 +22,7 @@ typedef struct {
     accessCard *pAccessCards;
     Configuration *pConfig;             // Pointer to Configuration struct
     unsigned long int *pCardRead;       // Last read card number from MCU RFID card reader
-    volatile bool *pRunCardReaderThread;  // TODO: Change to atomic bool
+    volatile bool *pRunCardReaderThread;
 } ThreadArgs;
 
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -74,10 +74,13 @@ int main(void) {
     // close TCP/IP connection
     closeConnection();
 
-    // TODO: Check conditions below using return codes from functions - statusMessages now HARDCODED!
     // save access cards to file
-    saveAccessCards(pAccessCards, *pCardCount); // data_storage.c
-    printStatusMessage(SUCCESS, "Saved %zu access cards to file 'access_cards.csv'", *pCardCount);
+    int cardsSaved = saveAccessCards(pAccessCards, *pCardCount); // data_storage.c
+    if (cardsSaved == SUCCESS){ 
+        printStatusMessage(SUCCESS, "Saved %zu access cards to file 'access_cards.csv'", *pCardCount);
+    } else {
+        printStatusMessage(ERROR_FILE_NOT_FOUND, "Failed to save access cards to file 'access_cards.csv'");
+    }
 
     // Clean up memory
     free(pAccessCards);  // Free memory allocated by retrieveAccessCards() in data_storage.c

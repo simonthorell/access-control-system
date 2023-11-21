@@ -1,9 +1,6 @@
 # Exclude main.exe file
 main.exe
 
-# Exclude ASSIGNMENT.md
-ASSIGNMENT.md
-
 # Exclude obj folder and all its contents
 obj/
 
