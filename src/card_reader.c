@@ -30,14 +30,14 @@ void fakeTestScanCard(accessCard *pAccessCards, size_t *pCardCount) {
         lockUnlockMechanism(DOOR_UNLOCKED);
         // Validate that door controller MCU received and successfully executed locking mechanism. 
         if (!doorStatus) {
-            printf("Door successfully unlocked!\n");
+            // printf("Door successfully unlocked!\n");
         }
     } else {
         printf("Card authenticated! Access denied!\n");
         lockUnlockMechanism(DOOR_LOCKED);
         // Validate that door controller MCU received and successfully executed locking mechanism. 
         if (doorStatus) {
-            printf("Door currently locked!\n");
+            // printf("Door currently locked!\n");
         }
     }
 
