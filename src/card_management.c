@@ -22,8 +22,9 @@ void listAllCards(accessCard *pAccessCards, size_t *pCardCount) {
         // Format the dateCreated of the card into "YYYY-MM-DD HH:MM".
         strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M", localtime(&(pAccessCards[i].dateCreated)));
 
-        char *cardNumberString = malloc(sizeof(char) * CARD_ID_LENGTH); // 8 chars + 3 spaces + \0 = 12 chars
-        cardNumberString = uintToHex(pAccessCards[i].cardNumber); // card_reader.c
+        // char *cardNumberString = malloc(sizeof(char) * CARD_ID_LENGTH); // 8 chars + 3 spaces + \0 = 12 chars
+        // cardNumberString = uintToHex(pAccessCards[i].cardNumber); // card_reader.c
+        char *cardNumberString = uintToHex(pAccessCards[i].cardNumber);
 
         printf("Card ID: \033[33m%s\033[0m\tStatus: %-10s\tUpdated: %s\n",
             cardNumberString,
@@ -151,7 +152,7 @@ void addNewCard(accessCard **pAccessCards, size_t *pCardsMallocated, size_t *pCa
 void setCardAccess(accessCard *pAccessCards, size_t cardIndex) {
     int cardAccess;
     cardAccess = updateAccessMenu(); // admin_menu.c
-    printStatusMessage(SUCCESS, "Card updated with access status: %s", pAccessCards[cardAccess].cardAccess == ACCESS ? "\033[32mACCESS\033[0m" : "\033[31mNO ACCESS\033[0m");
+    printStatusMessage(SUCCESS, "Card updated with access status: %s", pAccessCards[cardIndex].cardAccess == ACCESS ? "\033[31mNO ACCESS\033[0m" : "\033[32mACCESS\033[0m");
     pAccessCards[cardIndex].cardAccess = cardAccess;
     pAccessCards[cardIndex].dateCreated = time(NULL); // Generate current date/time
 }
