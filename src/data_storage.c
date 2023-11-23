@@ -109,6 +109,8 @@ int saveConfig(const char* filename, Configuration *config) {
         strcpy(temp_rfid_linux, config->rfid_serial_port);
     #elif defined(__APPLE__)
         strcpy(temp_rfid_mac, config->rfid_serial_port);
+    #else // Default to linux
+        strcpy(temp_rfid_linux, config->rfid_serial_port);
     #endif
 
     // Now open the file in write mode to update the values
@@ -162,13 +164,13 @@ Configuration* readConfig(const char* filename) {
 
         if (strstr(line, "rfid_serial_port") != NULL) {
             #ifdef _WIN32
-                fprintf(file, "rfid_serial_port_win32 = %s\n", config->rfid_serial_port);
+                sscanf(line, "rfid_serial_port_win32 = %s", config->rfid_serial_port);
             #elif defined(__linux__)
-                fprintf(file, "rfid_serial_port_linux = %s\n", config->rfid_serial_port);
+                sscanf(line, "rfid_serial_port_linux = %s", config->rfid_serial_port);
             #elif defined(__APPLE__)
                 sscanf(line, "rfid_serial_port_mac = %s", config->rfid_serial_port);
-            #else
-                #error "Unknown Operating System"
+            #else // Default to linux
+                sscanf(line, "rfid_serial_port_linux = %s", config->rfid_serial_port);
             #endif
         } else if (strstr(line, "door_ip_address") != NULL) {
             sscanf(line, "door_ip_address = %s", config->door_ip_address);

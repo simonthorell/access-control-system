@@ -151,7 +151,7 @@ void addNewCard(accessCard **pAccessCards, size_t *pCardsMallocated, size_t *pCa
 void setCardAccess(accessCard *pAccessCards, size_t cardIndex) {
     int cardAccess;
     cardAccess = updateAccessMenu(); // admin_menu.c
-    printStatusMessage(SUCCESS, "Card updated with access status: %s", pAccessCards[cardAccess].cardAccess == ACCESS ? "\033[31mNO ACCESS\033[0m" : "\033[32mACCESS\033[0m");
+    printStatusMessage(SUCCESS, "Card updated with access status: %s", pAccessCards[cardAccess].cardAccess == ACCESS ? "\033[32mACCESS\033[0m" : "\033[31mNO ACCESS\033[0m");
     pAccessCards[cardIndex].cardAccess = cardAccess;
     pAccessCards[cardIndex].dateCreated = time(NULL); // Generate current date/time
 }
