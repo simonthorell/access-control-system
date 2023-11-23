@@ -75,27 +75,55 @@ accessCard* retrieveAccessCards(size_t *cardsMallocated, size_t *cardCount) {
 
 int saveConfig(const char* filename, Configuration *config) {
     FILE *file;
+    char line[256];
+    char temp_rfid_win32[50] = "";
+    char temp_rfid_linux[50] = "";
+    char temp_rfid_mac[50] = "";
 
-    file = fopen(filename, "w");
+    // Open the file in read mode to fetch the current values
+    file = fopen(filename, "r");
     if (file == NULL) {
-        perror("Error opening file");
+        perror("Error opening file for reading");
         return ERROR_FILE_NOT_FOUND;
     }
 
-    // Write Arduino RFID Reader section
-    fprintf(file, "[Arduino_RFID_Reader]\n");
+    while (fgets(line, sizeof(line), file)) {
+        char key[256], value[256];
 
+        if (sscanf(line, "%s = %s", key, value) == 2) {
+            if (strcmp(key, "rfid_serial_port_win32") == 0) {
+                strcpy(temp_rfid_win32, value);
+            } else if (strcmp(key, "rfid_serial_port_linux") == 0) {
+                strcpy(temp_rfid_linux, value);
+            } else if (strcmp(key, "rfid_serial_port_mac") == 0) {
+                strcpy(temp_rfid_mac, value);
+            }
+        }
+    }
+    fclose(file);
+
+    // Update the appropriate value for the current OS
     #ifdef _WIN32
-        fprintf(file, "rfid_serial_port_win32 = %s\n", config->rfid_serial_port);
+        strcpy(temp_rfid_win32, config->rfid_serial_port);
     #elif defined(__linux__)
-        fprintf(file, "rfid_serial_port_linux = %s\n", config->rfid_serial_port);
+        strcpy(temp_rfid_linux, config->rfid_serial_port);
     #elif defined(__APPLE__)
-        fprintf(file, "rfid_serial_port_mac = %s\n", config->rfid_serial_port);
-    #else
-        #error "Unknown Operating System"
+        strcpy(temp_rfid_mac, config->rfid_serial_port);
     #endif
 
-    // Write ESP8266 Door Control section
+    // Now open the file in write mode to update the values
+    file = fopen(filename, "w");
+    if (file == NULL) {
+        perror("Error opening file for writing");
+        return ERROR_FILE_NOT_FOUND;
+    }
+
+    // Write the updated values
+    fprintf(file, "[Arduino_RFID_Reader]\n");
+    fprintf(file, "rfid_serial_port_win32 = %s\n", temp_rfid_win32);
+    fprintf(file, "rfid_serial_port_linux = %s\n", temp_rfid_linux);
+    fprintf(file, "rfid_serial_port_mac = %s\n", temp_rfid_mac);
+
     fprintf(file, "[ESP8266_Door_Control]\n");
     fprintf(file, "door_ip_address = %s\n", config->door_ip_address);
     fprintf(file, "door_tcp_port = %d\n", config->door_tcp_port);
