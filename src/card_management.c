@@ -138,7 +138,7 @@ void addNewCard(accessCard **pAccessCards, size_t *pCardsMallocated, size_t *pCa
             return;
         }
         // If realloc succeeds, we update the original pointer to point to the newly allocated memory.
-        **pAccessCards = *temp;
+        *pAccessCards = temp;
     }
 
     // Loop through array and shift all elements after cardIndex to the right by one position.
@@ -161,9 +161,9 @@ void addNewCard(accessCard **pAccessCards, size_t *pCardsMallocated, size_t *pCa
 void setCardAccess(accessCard *pAccessCards, size_t cardIndex) {
     int cardAccess;
     cardAccess = updateAccessMenu(); // admin_menu.c
-    printStatusMessage(SUCCESS, "Card updated with access status: %s", pAccessCards[cardIndex].cardAccess == ACCESS ? "\033[31mNO ACCESS\033[0m" : "\033[32mACCESS\033[0m");
     pAccessCards[cardIndex].cardAccess = cardAccess;
     pAccessCards[cardIndex].dateCreated = time(NULL); // Generate current date/time
+    printStatusMessage(SUCCESS, "Card updated with access status: %s", pAccessCards[cardIndex].cardAccess == ACCESS ? "\033[32mACCESS\033[0m" : "\033[31mNO ACCESS\033[0m");
 }
 
 
