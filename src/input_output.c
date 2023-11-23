@@ -2,6 +2,7 @@
 #include <stdarg.h>          // va_list, va_start, va_arg, va_end
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>          // isdigit
 
 #include "safeinput.h"
 #include "card_management.h" // validateRFIDFormat
@@ -101,6 +102,44 @@ int getCardNumber(char* cardNumberInput, int cardIdLength){
             return 1;
         } else {
             printf("\033[31m * Invalid RFID format! Try Again!\033[0m\n");
+        }
+    }
+}
+
+int getConfigChoice(void* configVariable, VariableType type, char* inputMessage, int configVariableLength){
+    while (1) {
+        char newConfigVariable[256];  // A buffer large enough for most inputs
+
+        printf("\n\033[1;36m%s\033[0m", inputMessage);
+        GetInput(" (0 = back) \033[1;36m>>\033[0m ", newConfigVariable, sizeof(newConfigVariable) - 1);
+
+        if (newConfigVariable[0] == '0' && newConfigVariable[1] == '\0') {
+            printErrorMessage("Configuration not updated!");
+            return 0;
+        } else {
+            if (type == TYPE_INT) {
+                long val;
+                char *endPtr;
+
+                // Validate if the input is a valid integer within the specified range
+                val = strtol(newConfigVariable, &endPtr, 10);  // Convert string to long
+                if (endPtr == newConfigVariable || *endPtr != '\0' || val < 0 || val > configVariableLength) {
+                    printErrorMessage("Invalid integer input. Please try again.");
+                    continue; // Go to the next iteration of the loop
+                }
+
+                *(int*)configVariable = (int)val;  // Store the valid integer
+            } else if (type == TYPE_CHAR_PTR) {
+                // Check if the input is within the allowed length
+                if ((int)strlen(newConfigVariable) < configVariableLength) {
+                    strcpy((char*)configVariable, newConfigVariable);
+                } else {
+                    printErrorMessage("Input too long. Please enter a shorter input.");
+                    continue; // Go to the next iteration of the loop
+                }
+            }
+            printSuccessMessage("Configuration updated!");
+            return 1;
         }
     }
 }

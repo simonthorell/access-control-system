@@ -1,12 +1,13 @@
 #include "data_storage.h"
 #include <stdio.h>
-#include <stdlib.h> // malloc, free
+#include <stdlib.h>             // malloc, free
 #include <string.h>
 #include <time.h>
-#include "status_messages.h" // custom error/success handling
+#include "status_messages.h"    // custom error/success handling
+#include "input_output.h"       // custom input/output functions (printMessage etc.)
 
 int saveAccessCards(accessCard *pAccessCards, size_t cardCount) {
-    printf("\033[33m* Saving %zu access cards from memory location: %p to file 'access_cards.csv'...\033[0m\n", cardCount, (void *)pAccessCards);
+    printInfoMessage("Saving %zu access cards from memory location: %p to file 'access_cards.csv'...", cardCount, (void *)pAccessCards);
     FILE *file = fopen("access_cards.csv", "w");
     if (!file) return ERROR_FILE_NOT_FOUND; // Could not open file for writing.
 
@@ -81,18 +82,21 @@ int saveConfig(const char* filename, Configuration *config) {
         return ERROR_FILE_NOT_FOUND;
     }
 
+    // Write Arduino RFID Reader section
+    fprintf(file, "[Arduino_RFID_Reader]\n");
+
     #ifdef _WIN32
         fprintf(file, "rfid_serial_port_win32 = %s\n", config->rfid_serial_port);
     #elif defined(__linux__)
         fprintf(file, "rfid_serial_port_linux = %s\n", config->rfid_serial_port);
     #elif defined(__APPLE__)
         fprintf(file, "rfid_serial_port_mac = %s\n", config->rfid_serial_port);
-        printf("rfid_serial_port_mac = %s\n", config->rfid_serial_port);
     #else
         #error "Unknown Operating System"
     #endif
 
-    // fprintf(file, "rfid_serial_port = %s\n", config->rfid_serial_port);
+    // Write ESP8266 Door Control section
+    fprintf(file, "[ESP8266_Door_Control]\n");
     fprintf(file, "door_ip_address = %s\n", config->door_ip_address);
     fprintf(file, "door_tcp_port = %d\n", config->door_tcp_port);
 

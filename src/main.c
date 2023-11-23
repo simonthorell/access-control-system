@@ -162,7 +162,7 @@ void *runAdminConsol(void *args) {
     }
     pthread_mutex_unlock(&mutex);
 
-    int menu = systemMenu(actualArgs->pAccessCards, actualArgs->pCardsMallocated, actualArgs->pCardCount, actualArgs->pCardRead); // admin_menu.c
+    int menu = systemMenu(actualArgs->pAccessCards, actualArgs->pConfig, actualArgs->pCardsMallocated, actualArgs->pCardCount, actualArgs->pCardRead); // admin_menu.c
 
     if (menu == 0) {
         actualArgs->pRunCardReaderThread = false;
