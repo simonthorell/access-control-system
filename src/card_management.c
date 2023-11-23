@@ -22,8 +22,6 @@ void listAllCards(accessCard *pAccessCards, size_t *pCardCount) {
         // Format the dateCreated of the card into "YYYY-MM-DD HH:MM".
         strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M", localtime(&(pAccessCards[i].dateCreated)));
 
-        // char *cardNumberString = malloc(sizeof(char) * CARD_ID_LENGTH); // 8 chars + 3 spaces + \0 = 12 chars
-        // cardNumberString = uintToHex(pAccessCards[i].cardNumber); // card_reader.c
         char *cardNumberString = uintToHex(pAccessCards[i].cardNumber);
 
         printf("Card ID: \033[33m%s\033[0m\tStatus: %-10s\tUpdated: %s\n",
@@ -31,7 +29,7 @@ void listAllCards(accessCard *pAccessCards, size_t *pCardCount) {
             pAccessCards[i].cardAccess == ACCESS ? "\033[32mACCESS\033[0m  " : "\033[31mNO ACCESS\033[0m",
             buffer); // Print the formatted date.
 
-        free(cardNumberString);
+        free(cardNumberString); // Free the allocated memory allocated by uintToHex
     }
     printMenuFooter(73); // input_output.c
 }
@@ -124,16 +122,23 @@ void addRemoveAccess(accessCard *pAccessCards, size_t *pCardsMallocated, size_t 
 void addNewCard(accessCard **pAccessCards, size_t *pCardsMallocated, size_t *pCardCount, int cardIndex, unsigned long int cardNumber) {
     // Check if there is space for card within current memory allocation, if not - double allocation. 
     if (*pCardCount >= *pCardsMallocated) {
+        size_t oldSize = *pCardsMallocated * sizeof(accessCard);
+        printInfoMessage("Previous allocated memory size: %zu bytes", oldSize);
         // Attempt to double the amount of allocated memory
         *pCardsMallocated *= 2;
+        
         accessCard *temp = realloc(*pAccessCards, *pCardsMallocated * sizeof(accessCard*));
+
+        size_t newSize = *pCardsMallocated * sizeof(accessCard);
+        printInfoMessage("New allocated memory size: %zu bytes", newSize);
+
         if (!temp) {
             // If realloc fails, we print an error message and return early to avoid writing into a null pointer.
             fprintf(stderr, "Error: realloc failed.\n");
             return;
         }
         // If realloc succeeds, we update the original pointer to point to the newly allocated memory.
-        *pAccessCards = temp;
+        **pAccessCards = *temp;
     }
 
     // Loop through array and shift all elements after cardIndex to the right by one position.
@@ -146,7 +151,11 @@ void addNewCard(accessCard **pAccessCards, size_t *pCardsMallocated, size_t *pCa
     // Create new card at new empty spot (cardIndex) in array
     (*pAccessCards)[cardIndex].cardNumber = cardNumber;
     setCardAccess(*pAccessCards, cardIndex);
-    printStatusMessage(SUCCESS, "New card with ID '%s' has been registered", uintToHex(cardNumber));
+
+    // TODO: change the uintToHex function to not use malloc?
+    char *cardNumberString = uintToHex(cardNumber);
+    printStatusMessage(SUCCESS, "New card with ID '%s' has been registered", cardNumberString);
+    free(cardNumberString); // Free the allocated memory
 }
 
 void setCardAccess(accessCard *pAccessCards, size_t cardIndex) {
