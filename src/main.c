@@ -147,7 +147,6 @@ void *runCardReader(void *args) {
         portableSleep(1000); // Sleep for 1 second
         *actualArgs->pCardRead = 0;
     }
-
     serialDisconnect(serial_port); // Close the serial port connection
     return NULL; // No need to return a value, NULL is used when the return value is not used (required for POSIX threads)
 }
@@ -165,7 +164,7 @@ void *runAdminConsol(void *args) {
     int menu = systemMenu(actualArgs->pAccessCards, actualArgs->pConfig, actualArgs->pCardsMallocated, actualArgs->pCardCount, actualArgs->pCardRead); // admin_menu.c
 
     if (menu == 0) {
-        actualArgs->pRunCardReaderThread = false;
+       *actualArgs->pRunCardReaderThread = false;
         printInfoMessage("Shutting down system...");
     }
 

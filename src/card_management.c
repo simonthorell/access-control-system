@@ -14,7 +14,7 @@
 #include "status_messages.h"    // Custom error/success handling
 
 void listAllCards(accessCard *pAccessCards, size_t *pCardCount) {
-    // printf("Memory location: %p\n", (void *)pAccessCards);
+    printf("Memory location: %p\n", (void *)pAccessCards);
     printMenuHeader("REGISTERED ACCESS CARDS", 73); // input_output.c
     char cardNumberString[CARD_ID_LENGTH];
     

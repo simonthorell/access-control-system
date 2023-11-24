@@ -138,8 +138,10 @@ int wifiWrite(const char* command) {
 // Close the connection
 void closeConnection(void) {
     if (sock != -1) {
+        printInfoMessage("Closing TCP/IP connection...");
         close(sock);
         sock = -1;
+        printStatusMessage(SUCCESS, "TCP/IP connection closed");
         // printf("Connection closed.\n");
     }
 }

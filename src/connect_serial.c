@@ -26,7 +26,9 @@ int serialConnect(char *port) {
 }
 
 void serialDisconnect(int serial_port) {
+    printInfoMessage("Disconnecting from RFID reader (Arduino/ESP32) via serial port...");
     close(serial_port);
+    printStatusMessage(SUCCESS, "Disconnected from RFID reader on serial port");
 }
 
 char* serialRead(int serial_port, int timeout) {
