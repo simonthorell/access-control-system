@@ -7,6 +7,6 @@ int cardAuthentication(accessCard *pAccessCards, size_t *pCardCount, unsigned lo
 
 // Convert RFID card number to unsigned int and vice versa.
 unsigned long int hexToUint(char *hexString);
-char *uintToHex(unsigned long int cardNumber);
+void uintToHex(unsigned long int cardNumber, char *cardNumberString, size_t bufferSize);
 
 #endif

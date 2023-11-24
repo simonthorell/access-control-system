@@ -62,7 +62,7 @@ unsigned long int rfidReading(volatile bool *runCardReaderThread, accessCard *pA
                     lockUnlockMechanism(DOOR_LOCKED);
                 }
             }
-            free(line); // Free the allocated memory
+            // free(line); // Free the allocated memory
             return cardNumber; // Return card number
         }
     }
@@ -107,12 +107,10 @@ unsigned long int hexToUint(char *hexString) {
 }
 
 // Convert unsigned int to char* - Do not forget to free the allocated memory after use!
-char *uintToHex(unsigned long int cardNumber) {
-    char *cardNumberString = malloc(sizeof(char) * 12); // 8 chars + 3 spaces + \0 = 12 chars // Only works for 32-bit unsigned long int (4 bytes)
-    // char *cardNumberString = malloc(sizeof(char) * 24); // Modified for 64-bit unsigned long int (8 bytes)
-    if (cardNumberString == NULL) {
-        printStatusMessage(ERROR_OUT_OF_MEMORY, "Error allocating memory for cardNumberString");
-        exit(ERROR_OUT_OF_MEMORY);
+void uintToHex(unsigned long int cardNumber, char *cardNumberString, size_t bufferSize) {
+    if (bufferSize < 12) { // 8 chars + 3 spaces + \0 = 12 chars => CHANGE TO GLOBAL VARIABLE?
+        fprintf(stderr, "Buffer size is too small for hexadecimal conversion.\n");
+        return;
     }
 
     sprintf(cardNumberString, "%02lX %02lX %02lX %02lX", 
@@ -124,6 +122,4 @@ char *uintToHex(unsigned long int cardNumber) {
     for (int i = 0; cardNumberString[i]; i++) {
         cardNumberString[i] = toupper(cardNumberString[i]);
     }
-
-    return cardNumberString;
 }
