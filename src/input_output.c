@@ -93,15 +93,22 @@ int getNewPassword(char* newPassword, size_t passwordMaxLength){
     }
 }
 
-int getCardNumber(char* cardNumberInput, int cardIdLength){
+int getCardNumber(char* cardNumberInput, int cardIdLength) {
     while (1) {
         GetInput("\n\033[1;36mEnter card RFID (0 = back) >>\033[0m ", cardNumberInput, cardIdLength);
         if (cardNumberInput[0] == '0' && cardNumberInput[1] == '\0') {
             return 0;
-        } else if (isValidRFIDFormat(cardNumberInput)) {
-            return 1;
         } else {
-            printf("\033[31m * Invalid RFID format! Try Again!\033[0m\n");
+            // Convert the input to uppercase
+            for (int i = 0; cardNumberInput[i]; i++) {
+                cardNumberInput[i] = toupper(cardNumberInput[i]);
+            }
+            
+            if (isValidRFIDFormat(cardNumberInput)) {
+                return 1;
+            } else {
+                printf("\033[31m * Invalid RFID format! Try Again!\033[0m\n");
+            }
         }
     }
 }

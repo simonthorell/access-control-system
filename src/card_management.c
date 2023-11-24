@@ -15,8 +15,7 @@
 
 void listAllCards(accessCard *pAccessCards, size_t *pCardCount) {
     printMenuHeader("REGISTERED ACCESS CARDS", 73); // input_output.c
-
-    char cardNumberString[12];
+    char cardNumberString[CARD_ID_LENGTH];
     
     for (size_t i = 0; i < *pCardCount; i++) {
         char buffer[20]; // Buffer to hold the formatted date.
@@ -38,7 +37,7 @@ void listAllCards(accessCard *pAccessCards, size_t *pCardCount) {
 // Add or remove access for individual RFID cards
 void addRemoveAccess(accessCard *pAccessCards, size_t *pCardsMallocated, size_t *pCardCount, unsigned long int *pCardRead) {
     unsigned long int cardNumber;
-    char cardNumberString[12];
+    char cardNumberString[CARD_ID_LENGTH];
 
    // TODO: Move to admin_menu.c
     while (true) {
@@ -65,13 +64,14 @@ void addRemoveAccess(accessCard *pAccessCards, size_t *pCardsMallocated, size_t 
             *pCardRead = 0; // Reset cardRead to 0
             break;
         } else if (choice == 2) {
-            char cardNumberInput[CARD_ID_LENGTH];
-            int cardEntered = getCardNumber(cardNumberInput, CARD_ID_LENGTH); // admin_menu.c
+            // char cardNumberInput[CARD_ID_LENGTH];
+            int cardEntered = getCardNumber(cardNumberString, CARD_ID_LENGTH); // admin_menu.c
             if (cardEntered == 0) {
                 continue; // Skip the rest of the loop body and start from scanCardSubMenu() again
             }
             // Convert the card number from hexadecimal string to unsigned long integer.
-            cardNumber = hexToUint(cardNumberInput);
+            // cardNumberString = card
+            cardNumber = hexToUint(cardNumberString);
             break;
         } else if (choice == 3) {
             return;
@@ -166,7 +166,7 @@ void setCardAccess(accessCard *pAccessCards, size_t cardIndex) {
 
 
 void removeCard(accessCard **pAccessCards, size_t *pCardCount, size_t cardIndex) {
-    char cardNumberString[12];
+    char cardNumberString[CARD_ID_LENGTH];
     uintToHex((*pAccessCards)[cardIndex].cardNumber, cardNumberString, sizeof(cardNumberString));
     printInfoMessage("Removing card with ID '%s'...", cardNumberString);
 

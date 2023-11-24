@@ -108,7 +108,7 @@ unsigned long int hexToUint(char *hexString) {
 
 // Convert unsigned int to char* - Do not forget to free the allocated memory after use!
 void uintToHex(unsigned long int cardNumber, char *cardNumberString, size_t bufferSize) {
-    if (bufferSize < 12) { // 8 chars + 3 spaces + \0 = 12 chars => CHANGE TO GLOBAL VARIABLE?
+    if (bufferSize < CARD_ID_LENGTH) { // 8 chars + 3 spaces + \0 = 12 chars => CHANGE TO GLOBAL VARIABLE?
         fprintf(stderr, "Buffer size is too small for hexadecimal conversion.\n");
         return;
     }
