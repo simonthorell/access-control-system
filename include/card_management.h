@@ -19,10 +19,9 @@ enum cardAccess {
 #define CARD_ID_LENGTH 12 // 8 chars + 3 spaces + \0 = 12 chars
 
 void listAllCards(accessCard *pAccessCards, size_t *pCardCount);
-void addRemoveAccess(accessCard *pAccessCards, size_t *pCardsMallocated, size_t *pCardCount, unsigned long int *pCardRead);
 
-void addNewCard(accessCard **pAccessCards, size_t *pCardsMallocated, size_t *pCardCount, int cardIndex, unsigned long int cardNumber);
-void updateCard(accessCard *pAccessCards, size_t *pCardCount, size_t card);
+accessCard* addRemoveAccess(accessCard *pAccessCards, size_t *pCardsMallocated, size_t *pCardCount, unsigned long int *pCardRead);
+accessCard* addNewCard(accessCard *accessCards, size_t *pCardsMallocated, size_t *pCardCount, int cardIndex, unsigned long int cardNumber);
 void setCardAccess(accessCard *pAccessCards, size_t cardIndex);
 void removeCard(accessCard **pAccessCards, size_t *pCardCount, size_t cardIndex);
 

@@ -14,6 +14,7 @@
 #include "status_messages.h"    // Custom error/success handling
 
 void listAllCards(accessCard *pAccessCards, size_t *pCardCount) {
+    // printf("Memory location: %p\n", (void *)pAccessCards);
     printMenuHeader("REGISTERED ACCESS CARDS", 73); // input_output.c
     char cardNumberString[CARD_ID_LENGTH];
     
@@ -35,7 +36,7 @@ void listAllCards(accessCard *pAccessCards, size_t *pCardCount) {
 }
 
 // Add or remove access for individual RFID cards
-void addRemoveAccess(accessCard *pAccessCards, size_t *pCardsMallocated, size_t *pCardCount, unsigned long int *pCardRead) {
+accessCard* addRemoveAccess(accessCard *pAccessCards, size_t *pCardsMallocated, size_t *pCardCount, unsigned long int *pCardRead) {
     unsigned long int cardNumber;
     char cardNumberString[CARD_ID_LENGTH];
 
@@ -74,7 +75,7 @@ void addRemoveAccess(accessCard *pAccessCards, size_t *pCardsMallocated, size_t 
             cardNumber = hexToUint(cardNumberString);
             break;
         } else if (choice == 3) {
-            return;
+            return pAccessCards;
         }
     }
 
@@ -109,53 +110,57 @@ void addRemoveAccess(accessCard *pAccessCards, size_t *pCardsMallocated, size_t 
 
             if (choice == 1) {
                 // If the card is not found, the `left` variable now points to the position where the card should be inserted.
-                addNewCard(&pAccessCards, pCardsMallocated, pCardCount, left, cardNumber);
+                pAccessCards = addNewCard(pAccessCards, pCardsMallocated, pCardCount, left, cardNumber);
                 break;
             } else {
                 break;
             }
         }
     }
+    return pAccessCards;
 }
 
-void addNewCard(accessCard **pAccessCards, size_t *pCardsMallocated, size_t *pCardCount, int cardIndex, unsigned long int cardNumber) {
+accessCard* addNewCard(accessCard *accessCards, size_t *pCardsMallocated, size_t *pCardCount, int cardIndex, unsigned long int cardNumber) {
     // Check if there is space for card within current memory allocation, if not - double allocation. 
     if (*pCardCount >= *pCardsMallocated) {
         size_t oldSize = *pCardsMallocated * sizeof(accessCard);
-        printInfoMessage("Previous allocated memory size: %zu bytes", oldSize);
+        printInfoMessage("Previous allocated memory size: %zu bytes at location: %p", oldSize, (void *)accessCards);
         // Attempt to double the amount of allocated memory
         *pCardsMallocated *= 2;
         
-        accessCard *temp = realloc(*pAccessCards, *pCardsMallocated * sizeof(accessCard*));
+        accessCard *temp = realloc(accessCards, *pCardsMallocated * sizeof(accessCard));
 
         size_t newSize = *pCardsMallocated * sizeof(accessCard);
-        printInfoMessage("New allocated memory size: %zu bytes", newSize);
+        printInfoMessage("New allocated memory size: %zu bytes at location: %p", newSize, (void *)temp);
 
         if (!temp) {
-            // If realloc fails, we print an error message and return early to avoid writing into a null pointer.
+            // If realloc fails, we print an error message and return the original pointer.
             fprintf(stderr, "Error: realloc failed.\n");
-            return;
+            return accessCards;
         }
         // If realloc succeeds, we update the original pointer to point to the newly allocated memory.
-        *pAccessCards = temp;
+        accessCards = temp;
     }
 
     // Loop through array and shift all elements after cardIndex to the right by one position.
-        for (size_t i = *pCardCount; i > (size_t)cardIndex; i--) {
-        (*pAccessCards)[i] = (*pAccessCards)[i - 1];
+    for (size_t i = *pCardCount; i > (size_t)cardIndex; i--) {
+        accessCards[i] = accessCards[i - 1];
     }
     (*pCardCount)++;
     printInfoMessage("%zu cards stored and current allocation is %zu cards", *pCardCount, *pCardsMallocated);
 
-    // Create new card at new empty spot (cardIndex) in array
-    (*pAccessCards)[cardIndex].cardNumber = cardNumber;
-    setCardAccess(*pAccessCards, cardIndex);
+    // Create a new card at the new empty spot (cardIndex) in the array
+    accessCards[cardIndex].cardNumber = cardNumber;
+    setCardAccess(accessCards, cardIndex);
 
     char cardNumberString[12];
     uintToHex(cardNumber, cardNumberString, sizeof(cardNumberString));
 
     printStatusMessage(SUCCESS, "New card with ID '%s' has been registered", cardNumberString);
+
+    return accessCards; // Return the updated pointer to the array
 }
+
 
 void setCardAccess(accessCard *pAccessCards, size_t cardIndex) {
     int cardAccess = updateAccessMenu(); // admin_menu.c

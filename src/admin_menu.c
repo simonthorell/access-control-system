@@ -67,7 +67,7 @@ void adminMenu(accessCard *pAccessCards, Configuration *pConfig, size_t *pCardsM
                 listAllCards(pAccessCards, pCardCount);
                 break;
             case 3:
-                addRemoveAccess(pAccessCards, pCardsMallocated, pCardCount, pCardRead);
+                pAccessCards = addRemoveAccess(pAccessCards, pCardsMallocated, pCardCount, pCardRead);
                 break;
             case 4:
                 return; // Back to system menu
