@@ -40,28 +40,28 @@ Responsible for the direct interaction with the RFID hardware, providing the mea
 - **Test Scanning**: Facilitates testing and debugging of the RFID reading process through simulated card scans.
 
 ## Run in docker
-- **Build**: docker build -t access_control_system .
-- **RUN**: docker run -it  --name access-control-app access_control_system (-it allows you to interact with a Docker container via the command line)
+- **Build**: `docker build -t access_control_system` .
+- **RUN**: `docker run -it  --name access-control-app access_control_system` (-it allows you to interact with a Docker container via the command line)
 
-- **ACCESS TERMINAL FROM RUNNING CONTAINER**: docker attach access-control-app
+- **ACCESS TERMINAL FROM RUNNING CONTAINER**: `docker attach access-control-app`
 
-- **START**: docker start -i access-control-app (-i activates STDIN for interactive mode)
-- **STOP**: docker stop access-control-app    (NOTE! run -it flag to add command line access for container app.)
+- **START**: `docker start -i access-control-app` (-i activates STDIN for interactive mode)
+- **STOP**: `docker stop access-control-app`    (NOTE! run -it flag to add command line access for container app.)
 
 - **SHARE IMAGE BY FILE**:  
-● docker save -o <path for generated tarball> <image name> // Saving image to share  
-● docker load -i <path to tarball> // Loding shared image  
+● `docker save -o <path for generated tarball> <image name>` // Saving image to share  
+● `docker load -i <path to tarball>` // Loding shared image  
 
 ## Autorun docker container on remote Linux Server
 - **PUSH IMAGE TO DOCKER HUB**: Use your Docker Hub username. Tag could be f.e. version_1.0  
-● docker tag access_control_system:latest USERNAME/access-control-app:TAG  
-● docker push USERNAME/access-control-app:TAG  
+● `docker tag access_control_system:latest USERNAME/access-control-app:TAG`  
+● `docker push USERNAME/access-control-app:TAG`
 
 - **PULL IMAGE FROM DOCKER HUB**:   
-● docker login --username USERNAME  
-● docker pull USERNAME/access-control-app:TAG  
+● `docker login --username USERNAME`  
+● `docker pull USERNAME/access-control-app:TAG`  
 
 - **RUN IMAGE ON SERVER**: (Use your Dockerhub Username. Tag could be f.e. version_1.0. Also change the USB device to your RFID reader -  
 below usually work in Linux).  
-● docker run -it --device=/dev/ttyUSB0:/dev/ttyUSB0 --name access-control-app USERNAME/access-control-app:TAG  
-● docker update --restart always access-control-app  
+● `docker run -it --device=/dev/ttyUSB0:/dev/ttyUSB0 --name access-control-app USERNAME/access-control-app:TAG`  
+● `docker update --restart always access-control-app`  
